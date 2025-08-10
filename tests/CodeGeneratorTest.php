@@ -666,4 +666,86 @@ final class CodeGeneratorTest extends TestCase
         self::assertInstanceOf(Group::class, $groupContent[1]);
         self::assertEquals(')', $groupContent[2]);
     }
+
+    public function testDumpWithNoImportsHasNoExtraNewline() : void
+    {
+        $generator = new CodeGenerator('App\\Services');
+
+        $result = $generator->dump(['class Test {}']);
+
+        $expected = <<<'PHP'
+            <?php
+
+            declare(strict_types=1);
+
+            namespace App\Services;
+
+            class Test {}
+
+            PHP;
+
+        self::assertSame($expected, $result);
+    }
+
+    public function testDumpWithImportsHasProperSpacing() : void
+    {
+        $generator = new CodeGenerator('App\\Services');
+        $generator->import('App\\Models\\User');
+
+        $result = $generator->dump(['class Test {}']);
+
+        $expected = <<<'PHP'
+            <?php
+
+            declare(strict_types=1);
+
+            namespace App\Services;
+
+            use App\Models\User;
+
+            class Test {}
+
+            PHP;
+
+        self::assertSame($expected, $result);
+    }
+
+    public function testDumpWithoutNamespaceAndNoImports() : void
+    {
+        $generator = new CodeGenerator();
+
+        $result = $generator->dump(['class Test {}']);
+
+        $expected = <<<'PHP'
+            <?php
+
+            declare(strict_types=1);
+
+            class Test {}
+
+            PHP;
+
+        self::assertSame($expected, $result);
+    }
+
+    public function testDumpWithoutNamespaceButWithImports() : void
+    {
+        $generator = new CodeGenerator();
+        $generator->import('App\\Models\\User');
+
+        $result = $generator->dump(['class Test {}']);
+
+        $expected = <<<'PHP'
+            <?php
+
+            declare(strict_types=1);
+
+            use App\Models\User;
+
+            class Test {}
+
+            PHP;
+
+        self::assertSame($expected, $result);
+    }
 }

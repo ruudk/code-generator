@@ -46,8 +46,8 @@ final class CodeGenerator
                             yield '';
                         }
 
-                        yield from $this->dumpImports();
-                        yield '';
+                        yield from $this->maybeDump([], $this->dumpImports(), ['']);
+
                         yield from $resolvedContent;
                     })),
                 ),
@@ -88,6 +88,41 @@ final class CodeGenerator
 
             yield sprintf('use %s;', $import);
         }
+    }
+
+    /**
+     * Yields from data with optional before/after content.
+     * Only yields before/after if the data is not empty.
+     *
+     * @param null|LazyCodeLineIterable|CodeLineIterable $before
+     * @param LazyCodeLineIterable|CodeLineIterable $data
+     * @param null|LazyCodeLineIterable|CodeLineIterable $after
+     * @return CodeLineIterable
+     */
+    public function maybeDump(
+        null | callable | iterable | string $before,
+        callable | iterable $data,
+        null | callable | iterable | string $after,
+    ) : iterable {
+        $hasContent = false;
+
+        foreach (self::resolveIterable($data) as $item) {
+            if ( ! $hasContent) {
+                $hasContent = true;
+
+                if ($before !== null) {
+                    yield from self::resolveIterable($before);
+                }
+            }
+
+            yield $item;
+        }
+
+        if ( ! $hasContent || $after === null) {
+            return;
+        }
+
+        yield from self::resolveIterable($after);
     }
 
     /**
