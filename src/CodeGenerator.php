@@ -296,11 +296,11 @@ final class CodeGenerator
 
     /**
      * Wraps code lines with a prefix and optional suffix
-     * @param CodeLineIterable $data
+     * @param LazyCodeLineIterable|CodeLineIterable $data
      *
      * @return iterable<CodeLine>
      */
-    public function wrap(string $prefix, iterable $data, ?string $suffix = null) : iterable
+    public function wrap(string $prefix, callable | iterable $data, ?string $suffix = null) : iterable
     {
         yield from $this->prefixFirst(
             $prefix,
@@ -324,13 +324,13 @@ final class CodeGenerator
 
     /**
      * Adds a prefix to the first line of the iterable
-     * @param CodeLineIterable $data
+     * @param LazyCodeLineIterable|CodeLineIterable $data
      * @return iterable<CodeLine>
      */
-    public function prefixFirst(string $prefix, iterable $data) : iterable
+    public function prefixFirst(string $prefix, callable | iterable $data) : iterable
     {
         $first = true;
-        foreach ($data as $line) {
+        foreach (self::resolveIterable($data) as $line) {
             if ($first) {
                 $first = false;
 
