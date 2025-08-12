@@ -1,7 +1,7 @@
 /.github export-ignore
 /examples export-ignore
 /tests export-ignore
-/.php-cs-fixer.php export-ignore
+.* export-ignore
 /composer.json
 /composer.lock export-ignore
 /phpstan.neon export-ignore
