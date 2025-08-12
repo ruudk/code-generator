@@ -4,13 +4,13 @@ declare(strict_types=1);
 
 namespace Ruudk\CodeGenerator;
 
+use Closure;
 use Generator;
 use UnitEnum;
 
 /**
  * @phpstan-type CodeLine string|Group
- * @phpstan-type CodeLineIterable iterable<CodeLine>
- * @phpstan-type LazyCodeLineIterable callable(): CodeLineIterable
+ * @phpstan-type CodeLines Closure(): (Generator<CodeLine>|array<CodeLine>|string)|array<CodeLine>|string
  */
 final class CodeGenerator
 {
@@ -25,9 +25,9 @@ final class CodeGenerator
 
     /**
      * Dumps the generated code with proper formatting, namespace, and imports
-     * @param LazyCodeLineIterable|CodeLineIterable $iterable
+     * @param CodeLines $iterable
      */
-    public function dump(callable | iterable $iterable) : string
+    public function dump(array | Closure | Generator | string $iterable) : string
     {
         $resolvedContent = self::resolveIterable($iterable);
 
@@ -59,9 +59,9 @@ final class CodeGenerator
 
     /**
      * Generates sorted import statements for all registered imports
-     * @return iterable<string>
+     * @return Generator<string>
      */
-    private function dumpImports() : iterable
+    private function dumpImports() : Generator
     {
         uasort(
             $this->imports,
@@ -94,16 +94,17 @@ final class CodeGenerator
      * Yields from data with optional before/after content.
      * Only yields before/after if the data is not empty.
      *
-     * @param null|LazyCodeLineIterable|CodeLineIterable $before
-     * @param LazyCodeLineIterable|CodeLineIterable $data
-     * @param null|LazyCodeLineIterable|CodeLineIterable $after
-     * @return CodeLineIterable
+     * @param null|CodeLines $before
+     * @param CodeLines $data
+     * @param null|CodeLines $after
+     *
+     * @return Generator<CodeLine>
      */
     public function maybeDump(
-        null | callable | iterable | string $before,
-        callable | iterable $data,
-        null | callable | iterable | string $after,
-    ) : iterable {
+        null | array | Closure | Generator | string $before,
+        array | Closure | Generator | string $data,
+        null | array | Closure | Generator | string $after,
+    ) : Generator {
         $hasContent = false;
 
         foreach (self::resolveIterable($data) as $item) {
@@ -213,11 +214,11 @@ final class CodeGenerator
 
     /**
      * Applies indentation to lines based on their level and Group indentation
-     * @param LazyCodeLineIterable|CodeLineIterable $data
      *
-     * @return iterable<string>
+     * @param CodeLines $data
+     * @return Generator<string>
      */
-    private function maybeIndent(callable | iterable $data, int $level = 0) : iterable
+    private function maybeIndent(array | Closure | Generator | string $data, int $level = 0) : Generator
     {
         foreach (self::resolveIterable($data) as $line) {
             if ($line instanceof Group) {
@@ -258,22 +259,21 @@ final class CodeGenerator
 
     /**
      * Wraps code lines as a statement by adding a semicolon to the last line
-     * @param LazyCodeLineIterable|CodeLineIterable $data
-     *
-     * @return iterable<CodeLine>
+     * @param CodeLines $data
+     * @return Generator<CodeLine>
      */
-    public function statement(callable | iterable $data) : iterable
+    public function statement(array | Closure | Generator | string $data) : Generator
     {
         yield from $this->suffixLast(';', $data);
     }
 
     /**
      * Adds a suffix to the last line of the iterable
-     * @param LazyCodeLineIterable|CodeLineIterable $data
      *
-     * @return iterable<CodeLine>
+     * @param CodeLines $data
+     * @return Generator<CodeLine>
      */
-    public function suffixLast(string $suffix, callable | iterable $data) : iterable
+    public function suffixLast(string $suffix, array | Closure | Generator | string $data) : Generator
     {
         foreach (self::resolveIterable($data) as $line) {
             if (isset($previousValue)) {
@@ -296,11 +296,11 @@ final class CodeGenerator
 
     /**
      * Wraps code lines with a prefix and optional suffix
-     * @param LazyCodeLineIterable|CodeLineIterable $data
      *
-     * @return iterable<CodeLine>
+     * @param CodeLines $data
+     * @return Generator<CodeLine>
      */
-    public function wrap(string $prefix, callable | iterable $data, ?string $suffix = null) : iterable
+    public function wrap(string $prefix, array | Closure | Generator | string $data, ?string $suffix = null) : Generator
     {
         yield from $this->prefixFirst(
             $prefix,
@@ -310,11 +310,13 @@ final class CodeGenerator
 
     /**
      * Conditionally wraps code lines with a prefix and optional suffix
-     * @param CodeLineIterable $data
-     * @return CodeLineIterable
+     * @param CodeLines $data
+     * @return Generator<CodeLine>
      */
-    public function maybeWrap(bool $condition, string $prefix, iterable $data, ?string $suffix = null) : iterable
+    public function maybeWrap(bool $condition, string $prefix, array | Closure | Generator | string $data, ?string $suffix = null) : Generator
     {
+        $data = self::resolveIterable($data);
+
         if ($condition) {
             yield from $this->wrap($prefix, $data, $suffix);
         } else {
@@ -324,10 +326,11 @@ final class CodeGenerator
 
     /**
      * Adds a prefix to the first line of the iterable
-     * @param LazyCodeLineIterable|CodeLineIterable $data
-     * @return iterable<CodeLine>
+     *
+     * @param CodeLines $data
+     * @return Generator<CodeLine>
      */
-    public function prefixFirst(string $prefix, callable | iterable $data) : iterable
+    public function prefixFirst(string $prefix, array | Closure | Generator | string $data) : Generator
     {
         $first = true;
         foreach (self::resolveIterable($data) as $line) {
@@ -351,13 +354,15 @@ final class CodeGenerator
 
     /**
      * Adds a suffix to the first line of the iterable
-     * @param CodeLineIterable $data
-     * @return iterable<string|Group>
+     *
+     * @param CodeLines $data
+     *
+     * @return Generator<string|Group>
      */
-    public function suffixFirst(string $suffix, iterable $data) : iterable
+    public function suffixFirst(string $suffix, array | Closure | Generator | string $data) : Generator
     {
         $first = true;
-        foreach ($data as $line) {
+        foreach (self::resolveIterable($data) as $line) {
             if ($first) {
                 $first = false;
 
@@ -378,9 +383,10 @@ final class CodeGenerator
 
     /**
      * Joins code lines with a delimiter into a single string
-     * @param LazyCodeLineIterable|CodeLineIterable $data
+     *
+     * @param CodeLines $data
      */
-    public function join(string $delimiter, callable | iterable $data) : string
+    public function join(string $delimiter, array | Closure | Generator | string $data) : string
     {
         $resolved = [];
         foreach (self::resolveIterable($data) as $item) {
@@ -392,10 +398,12 @@ final class CodeGenerator
 
     /**
      * Joins the first two elements of the iterable together
-     * @param LazyCodeLineIterable|CodeLineIterable $data
-     * @return iterable<string|Group>
+     *
+     * @param CodeLines $data
+     *
+     * @return Generator<string|Group>
      */
-    public function joinFirstPair(callable | iterable $data) : iterable
+    public function joinFirstPair(array | Closure | Generator | string $data) : Generator
     {
         $first = null;
         $i = 0;
@@ -439,11 +447,12 @@ final class CodeGenerator
 
     /**
      * Adds a suffix to all lines except comments
-     * @param LazyCodeLineIterable|CodeLineIterable $data
      *
-     * @return iterable<CodeLine>
+     * @param CodeLines $data
+     *
+     * @return Generator<CodeLine>
      */
-    public function allSuffix(string $suffix, callable | iterable $data) : iterable
+    public function allSuffix(string $suffix, array | Closure | Generator | string $data) : Generator
     {
         foreach (self::resolveIterable($data) as $value) {
             if ($value instanceof Group) {
@@ -464,17 +473,23 @@ final class CodeGenerator
 
     /**
      * Generates a method call or constructor invocation
-     * @param CodeLineIterable|string $object
-     * @param LazyCodeLineIterable|CodeLineIterable $args
      *
-     * @return iterable<CodeLine>
+     * @param CodeLines $object
+     * @param CodeLines $args
+     *
+     * @return Generator<CodeLine>
      */
-    public function dumpCall(iterable | string $object, string $method, callable | iterable $args = [], bool $static = false, bool $addCommaAfterEachArgument = true) : iterable
-    {
+    public function dumpCall(
+        array | Closure | Generator | string $object,
+        string $method,
+        array | Closure | Generator | string $args = [],
+        bool $static = false,
+        bool $addCommaAfterEachArgument = true,
+    ) : Generator {
         $args = self::resolveIterable($args);
 
-        if (is_iterable($object)) {
-            yield from $object;
+        if ( ! is_string($object)) {
+            yield from self::resolveIterable($object);
             yield Group::indent(1, function () use ($addCommaAfterEachArgument, $method, $args) {
                 if ($args === []) {
                     yield sprintf('->%s()', $method);
@@ -524,11 +539,12 @@ final class CodeGenerator
 
     /**
      * Generates a function call with arguments
-     * @param LazyCodeLineIterable|CodeLineIterable $args
      *
-     * @return iterable<CodeLine>
+     * @param CodeLines $args
+     *
+     * @return Generator<CodeLine>
      */
-    public function dumpFunctionCall(string $function, callable | iterable $args = []) : iterable
+    public function dumpFunctionCall(string $function, array | Closure | Generator | string $args = []) : Generator
     {
         $args = self::resolveIterable($args);
 
@@ -551,11 +567,11 @@ final class CodeGenerator
 
     /**
      * Resolves a callable, iterable, or string into an array of lines
-     * @param LazyCodeLineIterable|CodeLineIterable|string $iterable
+     * @param CodeLines $iterable
      *
      * @return ($iterable is iterable<string> ? array<string> : array<CodeLine>)
      */
-    public static function resolveIterable(callable | iterable | string $iterable) : array
+    public static function resolveIterable(array | Closure | Generator | string $iterable) : array
     {
         if (is_callable($iterable)) {
             $iterable = $iterable();

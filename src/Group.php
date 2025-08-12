@@ -4,34 +4,37 @@ declare(strict_types=1);
 
 namespace Ruudk\CodeGenerator;
 
+use Closure;
+use Generator;
+
 /**
- * @phpstan-import-type CodeLineIterable from CodeGenerator
- * @phpstan-import-type LazyCodeLineIterable from CodeGenerator
+ * @phpstan-import-type CodeLines from CodeGenerator
+ * @phpstan-import-type CodeLine from CodeGenerator
  */
 final class Group
 {
     public int $indention = 0;
 
     /**
-     * @var array<string|Group>
+     * @var array<CodeLine>
      */
     public readonly array $lines;
 
     /**
-     * @param LazyCodeLineIterable|CodeLineIterable|string $lines
+     * @param CodeLines $lines
      */
     public function __construct(
-        callable | iterable | string $lines,
+        array | Closure | Generator | string $lines,
     ) {
         $this->lines = CodeGenerator::resolveIterable($lines);
     }
 
     /**
-     * @param LazyCodeLineIterable|CodeLineIterable|string $lines
+     * @param CodeLines $lines
      */
     public static function indent(
         int $indention,
-        callable | iterable | string $lines,
+        array | Closure | Generator | string $lines,
     ) : self {
         $group = new self($lines);
         $group->indention = $indention;
