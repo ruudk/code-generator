@@ -10,7 +10,7 @@ use UnitEnum;
 
 /**
  * @phpstan-type CodeLine string|Group
- * @phpstan-type CodeLines Closure(): (Generator<CodeLine>|array<CodeLine>|string)|array<CodeLine>|string
+ * @phpstan-type CodeLines Closure(): (Generator<CodeLine>|array<CodeLine>|string)|array<CodeLine|Generator<CodeLine>>|Generator<CodeLine>|string
  */
 final class CodeGenerator
 {

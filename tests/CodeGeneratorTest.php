@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Ruudk\CodeGenerator;
 
+use Generator;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\TestCase;
 use Ruudk\CodeGenerator\Fixtures\TestEnum;
@@ -441,6 +442,39 @@ final class CodeGeneratorTest extends TestCase
         $result = iterator_to_array($generator->dumpCall('$user', 'getName', []));
 
         self::assertSame(['$user->getName()'], $result);
+    }
+
+    public function testDumpCallWithArrayOfGenerators() : void
+    {
+        $true = function () : Generator {
+            yield 'true';
+        };
+
+        $false = function () : Generator {
+            yield 'false';
+        };
+
+        $generator = new CodeGenerator();
+
+        $result = iterator_to_array($generator->dumpCall('$var', 'method', [
+            $true(),
+            $false(),
+        ]));
+
+        self::assertSame(
+            <<<'PHP'
+                <?php
+
+                declare(strict_types=1);
+
+                $var->method(
+                    true,
+                    false,
+                )
+
+                PHP,
+            $generator->dump($result),
+        );
     }
 
     public function testDumpCallWithMultipleArguments() : void
