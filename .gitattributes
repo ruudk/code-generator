@@ -1,4 +1,5 @@
 /.github export-ignore
+/examples export-ignore
 /tests export-ignore
 /.php-cs-fixer.php export-ignore
 /composer.json
