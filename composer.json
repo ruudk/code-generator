@@ -29,6 +29,7 @@
     },
     "autoload-dev": {
         "psr-4": {
+            "Ruudk\\CodeGenerator\\Hooks\\": "hooks/",
             "Ruudk\\CodeGenerator\\": "tests/"
         }
     },

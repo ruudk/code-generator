@@ -28,7 +28,7 @@ declare(strict_types=1);
 
 use Ruudk\CodeGenerator\CodeGenerator;
 
-include '../vendor/autoload.php';
+include 'vendor/autoload.php';
 
 $generator = new CodeGenerator('Example\Demo');
 
