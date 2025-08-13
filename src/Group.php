@@ -33,8 +33,8 @@ final class Group
      * @param CodeLines $lines
      */
     public static function indent(
-        int $indention,
         array | Closure | Generator | string $lines,
+        int $indention = 1,
     ) : self {
         $group = new self($lines);
         $group->indention = $indention;

@@ -19,13 +19,13 @@ echo $generator->dump([
         $generator->import('Example\Demo'),
         $generator->import('Example\Parent'),
     ),
-    Group::indent(1, function () use ($generator) {
+    Group::indent(function () use ($generator) {
         yield 'public function __construct(';
-        yield Group::indent(1, function () use ($generator) {
+        yield Group::indent(function () use ($generator) {
             yield sprintf('private %s $date,', $generator->import(DateTimeImmutable::class));
         });
         yield ') {';
-        yield Group::indent(1, function () use ($generator) {
+        yield Group::indent(function () use ($generator) {
             yield $generator->dumpCall('parent', '__construct', [
                 "'Hello, World!'",
                 'true',

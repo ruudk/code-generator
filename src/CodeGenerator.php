@@ -284,7 +284,7 @@ final class CodeGenerator
 
         if (isset($previousValue)) {
             if ($previousValue instanceof Group) {
-                yield Group::indent($previousValue->indention, $this->suffixLast($suffix, $previousValue->lines));
+                yield Group::indent($this->suffixLast($suffix, $previousValue->lines), $previousValue->indention);
 
                 return;
             }
@@ -373,7 +373,7 @@ final class CodeGenerator
                 $first = false;
 
                 if ($line instanceof Group) {
-                    yield Group::indent($line->indention, $this->prefixFirst($prefix, $line->lines));
+                    yield Group::indent($this->prefixFirst($prefix, $line->lines), $line->indention);
 
                     continue;
                 }
@@ -402,7 +402,7 @@ final class CodeGenerator
                 $first = false;
 
                 if ($line instanceof Group) {
-                    yield Group::indent($line->indention, $this->suffixFirst($suffix, $line->lines));
+                    yield Group::indent($this->suffixFirst($suffix, $line->lines), $line->indention);
 
                     continue;
                 }
@@ -455,7 +455,7 @@ final class CodeGenerator
 
                 if ($line instanceof Group && $first !== null) {
                     $prefix = $first instanceof Group ? '' : (string) $first;
-                    yield Group::indent($line->indention, $this->prefixFirst($prefix, $line->lines));
+                    yield Group::indent($this->prefixFirst($prefix, $line->lines), $line->indention);
 
                     continue;
                 }
@@ -525,7 +525,7 @@ final class CodeGenerator
 
         if ( ! is_string($object)) {
             yield from self::resolveIterable($object);
-            yield Group::indent(1, function () use ($addCommaAfterEachArgument, $method, $args) {
+            yield Group::indent(function () use ($addCommaAfterEachArgument, $method, $args) {
                 if ($args === []) {
                     yield sprintf('->%s()', $method);
 
@@ -539,7 +539,7 @@ final class CodeGenerator
                 }
 
                 yield sprintf('->%s(', $method);
-                yield Group::indent(1, $addCommaAfterEachArgument ? $this->allSuffix(',', $args) : $args);
+                yield Group::indent($addCommaAfterEachArgument ? $this->allSuffix(',', $args) : $args);
                 yield ')';
             });
 
@@ -568,7 +568,7 @@ final class CodeGenerator
         }
 
         yield sprintf('%s(', $call);
-        yield Group::indent(1, $addCommaAfterEachArgument ? $this->allSuffix(',', $args) : $args);
+        yield Group::indent($addCommaAfterEachArgument ? $this->allSuffix(',', $args) : $args);
         yield ')';
     }
 
@@ -596,7 +596,7 @@ final class CodeGenerator
         }
 
         yield sprintf('%s(', $function);
-        yield Group::indent(1, $this->allSuffix(',', $args));
+        yield Group::indent($this->allSuffix(',', $args));
         yield ')';
     }
 

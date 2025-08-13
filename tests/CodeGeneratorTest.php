@@ -60,10 +60,10 @@ final class CodeGeneratorTest extends TestCase
 
         $result = $generator->dump([
             'class Test {',
-            Group::indent(1, [
+            Group::indent([
                 'public function method()',
                 '{',
-                Group::indent(1, ['return true;']),
+                Group::indent(['return true;']),
                 '}',
             ]),
             '}',
@@ -249,7 +249,7 @@ final class CodeGeneratorTest extends TestCase
 
         $result = iterator_to_array($generator->statement([
             'if ($condition)',
-            Group::indent(1, ['return true']),
+            Group::indent(['return true']),
         ]));
 
         self::assertCount(2, $result);
@@ -324,7 +324,7 @@ final class CodeGeneratorTest extends TestCase
     {
         $generator = new CodeGenerator();
 
-        $group = Group::indent(1, ['content']);
+        $group = Group::indent(['content']);
         $result = iterator_to_array($generator->prefixFirst('prefix: ', [$group]));
 
         self::assertCount(1, $result);
@@ -380,7 +380,7 @@ final class CodeGeneratorTest extends TestCase
     {
         $generator = new CodeGenerator();
 
-        $group = Group::indent(1, ['content']);
+        $group = Group::indent(['content']);
         $result = iterator_to_array($generator->joinFirstPair(['prefix', $group, 'third']));
 
         self::assertCount(2, $result);
@@ -578,16 +578,16 @@ final class CodeGeneratorTest extends TestCase
         $code = $generator->dump(function () {
             yield 'class UserService';
             yield '{';
-            yield Group::indent(1, function () {
+            yield Group::indent(function () {
                 yield 'public function __construct(';
-                yield Group::indent(1, [
+                yield Group::indent([
                     'private UserRepository $repository,',
                 ]);
                 yield ') {}';
                 yield '';
                 yield 'public function findUser(int $id): ?User';
                 yield '{';
-                yield Group::indent(1, [
+                yield Group::indent([
                     'return $this->repository->find($id);',
                 ]);
                 yield '}';
@@ -634,7 +634,7 @@ final class CodeGeneratorTest extends TestCase
         $generator = new CodeGenerator();
 
         $data = [
-            Group::indent(1, ['inner content']),
+            Group::indent(['inner content']),
             'second line',
         ];
 
@@ -651,7 +651,7 @@ final class CodeGeneratorTest extends TestCase
 
         $data = [
             'first',
-            Group::indent(0, []),
+            Group::indent([], 0),
             'third',
         ];
 
@@ -836,12 +836,12 @@ final class CodeGeneratorTest extends TestCase
             'class Test {',
             '',
             '',
-            Group::indent(1, [
+            Group::indent([
                 '',
                 '',
                 'public function method()',
                 '{',
-                Group::indent(1, [
+                Group::indent([
                     '',
                     '',
                     'return true;',
@@ -932,7 +932,7 @@ final class CodeGeneratorTest extends TestCase
 
         $result = iterator_to_array($generator->trim([
             '',
-            Group::indent(1, ['content']),
+            Group::indent(['content']),
             'after group',
             '',
         ]));

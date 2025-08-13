@@ -28,7 +28,7 @@ echo $generator->dump(function () use ($generator) {
     yield '{';
 
     // Properties with indentation
-    yield Group::indent(1, [
+    yield Group::indent([
         '// Class properties',
         sprintf('private %s $date;', $generator->import(DateTimeImmutable::class)),
         sprintf('private %s $collection;', $generator->import('Doctrine\Common\Collections\Collection')),
@@ -37,9 +37,9 @@ echo $generator->dump(function () use ($generator) {
     ]);
 
     // Constructor using dumpCall
-    yield Group::indent(1, [
+    yield Group::indent([
         'public function __construct(',
-        Group::indent(1, [
+        Group::indent([
             sprintf('private readonly %s $service,', $generator->import('App\Services\MainService')),
             sprintf(
                 'private %s $enum = %s,',
@@ -49,7 +49,7 @@ echo $generator->dump(function () use ($generator) {
             'string $name = \'default\',',
         ]),
         ') {',
-        Group::indent(1, function () use ($generator) {
+        Group::indent(function () use ($generator) {
             // Parent constructor call
             yield from $generator->dumpCall('parent', '__construct', [
                 'enabled: true',
@@ -86,13 +86,13 @@ echo $generator->dump(function () use ($generator) {
     ]);
 
     // Method with various features
-    yield Group::indent(1, function () use ($generator) {
+    yield Group::indent(function () use ($generator) {
         yield '/**';
         yield ' * Demonstrates various generator features';
         yield ' */';
         yield 'public function processData(array $data): void';
         yield '{';
-        yield Group::indent(1, function () use ($generator) {
+        yield Group::indent(function () use ($generator) {
             // Using prefixFirst and suffixLast
             yield from $generator->prefixFirst(
                 '$result = ',
@@ -185,12 +185,12 @@ echo $generator->dump(function () use ($generator) {
     });
 
     // Private method with Group nesting
-    yield Group::indent(1, [
+    yield Group::indent([
         'private function calculate(array $data): int',
         '{',
-        Group::indent(1, function () {
+        Group::indent(function () {
             yield 'return match($data[\'type\'] ?? null) {';
-            yield Group::indent(1, [
+            yield Group::indent([
                 '\'sum\' => array_sum($data[\'values\']),',
                 '\'count\' => count($data[\'values\']),',
                 '\'max\' => max($data[\'values\']),',
@@ -203,12 +203,12 @@ echo $generator->dump(function () use ($generator) {
     ]);
 
     // Static factory method
-    yield Group::indent(1, function () use ($generator) {
+    yield Group::indent(function () use ($generator) {
         yield sprintf('public static function create(): %s', $generator->import('self'));
         yield '{';
-        yield Group::indent(1, [
+        yield Group::indent([
             sprintf('return new %s(', $generator->import('self')),
-            Group::indent(1, [
+            Group::indent([
                 sprintf('new %s(),', $generator->import('App\Services\MainService')),
             ]),
             ');',
@@ -225,7 +225,7 @@ echo $generator->dump(function () use ($generator) {
         $generator->import('Example\Interfaces\BaseInterface'),
     );
     yield '{';
-    yield Group::indent(1, [
+    yield Group::indent([
         'public function process(mixed $data): void;',
         '',
         'public function validate(array $rules): bool;',
@@ -236,16 +236,16 @@ echo $generator->dump(function () use ($generator) {
     // Enum
     yield 'enum Color: string';
     yield '{';
-    yield Group::indent(1, [
+    yield Group::indent([
         'case RED = \'#FF0000\';',
         'case GREEN = \'#00FF00\';',
         'case BLUE = \'#0000FF\';',
         '',
         'public function toRgb(): array',
         '{',
-        Group::indent(1, [
+        Group::indent([
             'return match($this) {',
-            Group::indent(1, [
+            Group::indent([
                 'self::RED => [255, 0, 0],',
                 'self::GREEN => [0, 255, 0],',
                 'self::BLUE => [0, 0, 255],',
@@ -260,13 +260,13 @@ echo $generator->dump(function () use ($generator) {
     // Trait
     yield 'trait TimestampableTrait';
     yield '{';
-    yield Group::indent(1, function () use ($generator) {
+    yield Group::indent(function () use ($generator) {
         yield sprintf('private %s $createdAt;', $generator->import(DateTimeInterface::class));
         yield sprintf('private ?%s $updatedAt = null;', $generator->import(DateTimeInterface::class));
         yield '';
         yield 'public function updateTimestamps(): void';
         yield '{';
-        yield Group::indent(1, [
+        yield Group::indent([
             'if ($this->createdAt === null) {',
             Group::indent(
                 1,
@@ -283,14 +283,14 @@ echo $generator->dump(function () use ($generator) {
     // Anonymous class
     yield from $generator->statement([
         '$anonymous = new class(',
-        Group::indent(1, ['$dependency']),
+        Group::indent(['$dependency']),
         ') {',
-        Group::indent(1, [
+        Group::indent([
             'public function __construct(private mixed $dep) {}',
             '',
             'public function execute(): void',
             '{',
-            Group::indent(1, ['echo \'Anonymous class method\';']),
+            Group::indent(['echo \'Anonymous class method\';']),
             '}',
         ]),
         '}',

@@ -65,7 +65,7 @@ final class GroupTest extends TestCase
 
     public function testIndentStaticMethodWithString() : void
     {
-        $group = Group::indent(2, 'indented line');
+        $group = Group::indent('indented line', 2);
 
         self::assertSame(['indented line'], $group->lines);
         self::assertSame(2, $group->indention);
@@ -74,7 +74,7 @@ final class GroupTest extends TestCase
     public function testIndentStaticMethodWithArray() : void
     {
         $lines = ['line 1', 'line 2'];
-        $group = Group::indent(3, $lines);
+        $group = Group::indent($lines, 3);
 
         self::assertSame($lines, $group->lines);
         self::assertSame(3, $group->indention);
@@ -87,7 +87,7 @@ final class GroupTest extends TestCase
             yield 'indented 2';
         };
 
-        $group = Group::indent(4, $callable);
+        $group = Group::indent($callable, 4);
 
         self::assertSame(['indented 1', 'indented 2'], $group->lines);
         self::assertSame(4, $group->indention);
@@ -95,7 +95,7 @@ final class GroupTest extends TestCase
 
     public function testIndentStaticMethodWithZeroIndentation() : void
     {
-        $group = Group::indent(0, 'no indent');
+        $group = Group::indent('no indent', 0);
 
         self::assertSame(['no indent'], $group->lines);
         self::assertSame(0, $group->indention);
@@ -103,7 +103,7 @@ final class GroupTest extends TestCase
 
     public function testIndentStaticMethodWithNegativeIndentation() : void
     {
-        $group = Group::indent(-1, 'negative indent');
+        $group = Group::indent('negative indent', -1);
 
         self::assertSame(['negative indent'], $group->lines);
         self::assertSame(-1, $group->indention);
@@ -150,9 +150,9 @@ final class GroupTest extends TestCase
 
     public function testComplexNestedStructure() : void
     {
-        $innerGroup = Group::indent(2, ['inner line 1', 'inner line 2']);
+        $innerGroup = Group::indent(['inner line 1', 'inner line 2'], 2);
         $middleGroup = new Group(['middle line', $innerGroup]);
-        $outerGroup = Group::indent(1, ['outer line', $middleGroup, 'final line']);
+        $outerGroup = Group::indent(['outer line', $middleGroup, 'final line']);
 
         self::assertSame(1, $outerGroup->indention);
         self::assertCount(3, $outerGroup->lines);
