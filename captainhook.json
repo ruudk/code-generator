@@ -7,6 +7,9 @@
         "enabled": true,
         "actions": [
             {
+                "action": "composer normalize --diff --dry-run"
+            },
+            {
                 "action": "\\CaptainHook\\App\\Hook\\PHP\\Action\\Linting"
             },
             {
