@@ -330,6 +330,16 @@ final class CodeGenerator
     }
 
     /**
+     * Creates an indented Group, optionally trimming empty lines first
+     *
+     * @param CodeLines $data
+     */
+    public function indent(array | Closure | Generator | string $data, bool $trim = true, int $indention = 1) : Group
+    {
+        return Group::indent($trim ? $this->trim($data) : $data, $indention);
+    }
+
+    /**
      * Wraps code lines with a prefix and optional suffix
      *
      * @param CodeLines $data

@@ -971,4 +971,200 @@ final class CodeGeneratorTest extends TestCase
 
         self::assertSame(['content'], $result);
     }
+
+    public function testIndentWithTrimEnabled() : void
+    {
+        $generator = new CodeGenerator();
+
+        $result = $generator->indent([
+            '',
+            '',
+            'public function test()',
+            '{',
+            '    return true;',
+            '}',
+            '',
+            '',
+        ]);
+
+        $code = $generator->dump([
+            'class Example',
+            '{',
+            $result,
+            '}',
+        ]);
+
+        $expected = <<<'PHP'
+            <?php
+
+            declare(strict_types=1);
+
+            class Example
+            {
+                public function test()
+                {
+                    return true;
+                }
+            }
+
+            PHP;
+
+        self::assertSame($expected, $code);
+    }
+
+    public function testIndentWithTrimDisabled() : void
+    {
+        $generator = new CodeGenerator();
+
+        $result = $generator->indent([
+            '',
+            'public function test()',
+            '{',
+            '    return true;',
+            '}',
+            '',
+        ], false);
+
+        $code = $generator->dump([
+            'class Example',
+            '{',
+            $result,
+            '}',
+        ]);
+
+        $expected = <<<'PHP'
+            <?php
+
+            declare(strict_types=1);
+
+            class Example
+            {
+
+                public function test()
+                {
+                    return true;
+                }
+
+            }
+
+            PHP;
+
+        self::assertSame($expected, $code);
+    }
+
+    public function testIndentWithCustomIndentionLevel() : void
+    {
+        $generator = new CodeGenerator();
+
+        $result = $generator->indent([
+            'if (true) {',
+            '    return "nested";',
+            '}',
+        ], true, 2);
+
+        $code = $generator->dump([
+            'function test()',
+            '{',
+            $result,
+            '}',
+        ]);
+
+        $expected = <<<'PHP'
+            <?php
+
+            declare(strict_types=1);
+
+            function test()
+            {
+                    if (true) {
+                        return "nested";
+                    }
+            }
+
+            PHP;
+
+        self::assertSame($expected, $code);
+    }
+
+    public function testIndentWithGenerator() : void
+    {
+        $generator = new CodeGenerator();
+
+        $data = function () {
+            yield '';
+            yield 'private string $name;';
+            yield '';
+            yield 'private int $age;';
+            yield '';
+        };
+
+        $result = $generator->indent($data);
+
+        $code = $generator->dump([
+            'class Person',
+            '{',
+            $result,
+            '}',
+        ]);
+
+        $expected = <<<'PHP'
+            <?php
+
+            declare(strict_types=1);
+
+            class Person
+            {
+                private string $name;
+
+                private int $age;
+            }
+
+            PHP;
+
+        self::assertSame($expected, $code);
+    }
+
+    public function testIndentPreservesNestedGroups() : void
+    {
+        $generator = new CodeGenerator();
+
+        $result = $generator->indent([
+            '',
+            'public function nested()',
+            '{',
+            Group::indent([
+                'if ($condition) {',
+                Group::indent(['return true;']),
+                '}',
+            ]),
+            '}',
+            '',
+        ]);
+
+        $code = $generator->dump([
+            'class Test',
+            '{',
+            $result,
+            '}',
+        ]);
+
+        $expected = <<<'PHP'
+            <?php
+
+            declare(strict_types=1);
+
+            class Test
+            {
+                public function nested()
+                {
+                    if ($condition) {
+                        return true;
+                    }
+                }
+            }
+
+            PHP;
+
+        self::assertSame($expected, $code);
+    }
 }

@@ -27,7 +27,6 @@ composer require ruudk/code-generator
 declare(strict_types=1);
 
 use Ruudk\CodeGenerator\CodeGenerator;
-use Ruudk\CodeGenerator\Group;
 
 include '../vendor/autoload.php';
 
@@ -39,21 +38,22 @@ echo $generator->dump([
 
     $generator->dumpAttribute('Example\Attributes\Something'),
     sprintf(
-        'final readonly class %s extends %s {',
+        'final readonly class %s extends %s',
         $generator->import('Example\Demo'),
         $generator->import('Example\Parent'),
     ),
-    Group::indent(function() use ($generator) {
+    '{',
+    $generator->indent(function () use ($generator) {
         yield 'public function __construct(';
-        yield Group::indent(function () use ($generator) {
+        yield $generator->indent(function () use ($generator) {
             yield sprintf('private %s $date,', $generator->import(DateTimeImmutable::class));
         });
         yield ') {';
-        yield Group::indent(function () use ($generator) {
-            yield $generator->dumpCall('parent', '__construct', [
+        yield $generator->indent(function () use ($generator) {
+            yield from $generator->statement($generator->dumpCall('parent', '__construct', [
                 "'Hello, World!'",
-                "true",
-            ], true);
+                'true',
+            ], true));
         });
         yield '}';
     }),
@@ -78,14 +78,15 @@ use Example\Parent;
 // Auto-generated example file
 
 #[Something]
-final readonly class Demo extends Parent {
+final readonly class Demo extends Parent
+{
     public function __construct(
         private DateTimeImmutable $date,
     ) {
         parent::__construct(
             'Hello, World!',
             true,
-        )
+        );
     }
 }
 
