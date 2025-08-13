@@ -307,7 +307,7 @@ final class CodeGenerator
         $start = 0;
         foreach ($lines as $i => $line) {
             if ( ! ($line instanceof Group) && trim($line) === '') {
-                $start++;
+                ++$start;
             } else {
                 break;
             }
@@ -315,16 +315,16 @@ final class CodeGenerator
 
         // Find last non-empty line
         $end = count($lines) - 1;
-        for ($i = $end; $i >= $start; $i--) {
+        for ($i = $end; $i >= $start; --$i) {
             if ( ! ($lines[$i] instanceof Group) && trim($lines[$i]) === '') {
-                $end--;
+                --$end;
             } else {
                 break;
             }
         }
 
         // Yield the trimmed content
-        for ($i = $start; $i <= $end; $i++) {
+        for ($i = $start; $i <= $end; ++$i) {
             yield $lines[$i];
         }
     }
@@ -454,14 +454,14 @@ final class CodeGenerator
         $i = 0;
         foreach (self::resolveIterable($data) as $line) {
             if ($i === 0) {
-                $i++;
+                ++$i;
                 $first = $line;
 
                 continue;
             }
 
             if ($i === 1) {
-                $i++;
+                ++$i;
 
                 if ($line instanceof Group && $first !== null) {
                     $prefix = $first instanceof Group ? '' : (string) $first;
@@ -481,7 +481,7 @@ final class CodeGenerator
                 continue;
             }
 
-            $i++;
+            ++$i;
             yield $line;
         }
 
