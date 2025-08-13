@@ -19,7 +19,8 @@
         "phpstan/extension-installer": "^1.4",
         "phpstan/phpstan": "^2.1",
         "phpunit/phpunit": "^12.3",
-        "ticketswap/phpstan-error-formatter": "^1.1"
+        "ticketswap/phpstan-error-formatter": "^1.1",
+        "captainhook/captainhook-phar": "^5.25"
     },
     "autoload": {
         "psr-4": {
@@ -34,7 +35,8 @@
     "config": {
         "allow-plugins": {
             "ergebnis/composer-normalize": true,
-            "phpstan/extension-installer": true
+            "phpstan/extension-installer": true,
+            "captainhook/captainhook-phar": true
         }
     }
 }
