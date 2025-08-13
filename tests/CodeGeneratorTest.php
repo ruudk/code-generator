@@ -872,4 +872,103 @@ final class CodeGeneratorTest extends TestCase
 
         self::assertSame($expected, $result);
     }
+
+    public function testTrim() : void
+    {
+        $generator = new CodeGenerator();
+
+        $result = iterator_to_array($generator->trim([
+            '',
+            '',
+            'first line',
+            'middle line',
+            'last line',
+            '',
+            '',
+        ]));
+
+        self::assertSame(['first line', 'middle line', 'last line'], $result);
+    }
+
+    public function testTrimWithOnlyEmptyLines() : void
+    {
+        $generator = new CodeGenerator();
+
+        $result = iterator_to_array($generator->trim(['', '', '']));
+
+        self::assertSame([], $result);
+    }
+
+    public function testTrimWithNoEmptyLines() : void
+    {
+        $generator = new CodeGenerator();
+
+        $result = iterator_to_array($generator->trim(['line1', 'line2', 'line3']));
+
+        self::assertSame(['line1', 'line2', 'line3'], $result);
+    }
+
+    public function testTrimWithEmptyLinesInMiddle() : void
+    {
+        $generator = new CodeGenerator();
+
+        $result = iterator_to_array($generator->trim([
+            '',
+            'first',
+            '',
+            '',
+            'middle',
+            '',
+            'last',
+            '',
+        ]));
+
+        self::assertSame(['first', '', '', 'middle', '', 'last'], $result);
+    }
+
+    public function testTrimWithGroups() : void
+    {
+        $generator = new CodeGenerator();
+
+        $result = iterator_to_array($generator->trim([
+            '',
+            Group::indent(1, ['content']),
+            'after group',
+            '',
+        ]));
+
+        self::assertCount(2, $result);
+        self::assertInstanceOf(Group::class, $result[0]);
+        self::assertSame('after group', $result[1]);
+    }
+
+    public function testTrimWithGenerator() : void
+    {
+        $generator = new CodeGenerator();
+
+        $data = function () {
+            yield '';
+            yield '';
+            yield 'actual content';
+            yield '';
+        };
+
+        $result = iterator_to_array($generator->trim($data));
+
+        self::assertSame(['actual content'], $result);
+    }
+
+    public function testTrimWithIndentedEmptyLines() : void
+    {
+        $generator = new CodeGenerator();
+
+        $result = iterator_to_array($generator->trim([
+            '    ',
+            "\t",
+            'content',
+            '  ',
+        ]));
+
+        self::assertSame(['content'], $result);
+    }
 }

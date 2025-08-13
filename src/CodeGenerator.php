@@ -51,7 +51,7 @@ final class CodeGenerator
         );
 
         // Replace consecutive newlines with a single newline
-        $output = preg_replace('/(\r?\n){3,}/', PHP_EOL . PHP_EOL, $output);
+        $output = preg_replace('/(\r?\n){3,}/', PHP_EOL . PHP_EOL, $output) ?? '';
 
         return rtrim(ltrim($output, ' '), PHP_EOL) . PHP_EOL;
     }
@@ -290,6 +290,42 @@ final class CodeGenerator
             }
 
             yield $previousValue . $suffix;
+        }
+    }
+
+    /**
+     * Trims empty lines from the start and end of the iterable
+     *
+     * @param CodeLines $data
+     * @return Generator<CodeLine>
+     */
+    public function trim(array | Closure | Generator | string $data) : Generator
+    {
+        $lines = self::resolveIterable($data);
+
+        // Find first non-empty line
+        $start = 0;
+        foreach ($lines as $i => $line) {
+            if ( ! ($line instanceof Group) && trim($line) === '') {
+                $start++;
+            } else {
+                break;
+            }
+        }
+
+        // Find last non-empty line
+        $end = count($lines) - 1;
+        for ($i = $end; $i >= $start; $i--) {
+            if ( ! ($lines[$i] instanceof Group) && trim($lines[$i]) === '') {
+                $end--;
+            } else {
+                break;
+            }
+        }
+
+        // Yield the trimmed content
+        for ($i = $start; $i <= $end; $i++) {
+            yield $lines[$i];
         }
     }
 
