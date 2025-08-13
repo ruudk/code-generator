@@ -10,7 +10,13 @@
                 "action": "\\CaptainHook\\App\\Hook\\PHP\\Action\\Linting"
             },
             {
-                "action": "\\Ruudk\\CodeGenerator\\Hooks\\ValidateReadmeCodeSnippets"
+                "action": "cd examples && for file in *.php; do echo \"Testing examples/$file...\"; php \"$file\" > /dev/null 2>&1 || { echo \"✗ Failed: examples/$file\"; exit 1; }; echo \"✓ Passed: examples/$file\"; done",
+                "options": {
+                    "label": "Validate example files"
+                }
+            },
+            {
+                "action": "\\Ruudk\\CodeGenerator\\Hooks\\SyncReadmeExamples"
             },
             {
                 "action": "vendor/bin/php-cs-fixer fix"
