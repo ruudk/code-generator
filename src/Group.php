@@ -8,8 +8,6 @@ use Closure;
 use Generator;
 
 /**
- * @internal
- *
  * @phpstan-import-type CodeLines from CodeGenerator
  * @phpstan-import-type CodeLine from CodeGenerator
  */
