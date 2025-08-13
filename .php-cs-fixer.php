@@ -9,7 +9,6 @@ use PhpCsFixer\Runner\Parallel\ParallelConfigFactory;
 
 $finder = Finder::create()
     ->in(__DIR__ . '/examples')
-    ->in(__DIR__ . '/hooks')
     ->in(__DIR__ . '/src')
     ->in(__DIR__ . '/tests')
     ->append([__DIR__ . '/.php-cs-fixer.php']);

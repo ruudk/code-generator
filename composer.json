@@ -20,6 +20,7 @@
         "phpstan/extension-installer": "^1.4",
         "phpstan/phpstan": "^2.1",
         "phpunit/phpunit": "^12.3",
+        "ruudk/readme-examples-sync-hook": "^1.0",
         "ticketswap/phpstan-error-formatter": "^1.1"
     },
     "autoload": {
@@ -29,8 +30,7 @@
     },
     "autoload-dev": {
         "psr-4": {
-            "Ruudk\\CodeGenerator\\": "tests/",
-            "Ruudk\\CodeGenerator\\Hooks\\": "hooks/"
+            "Ruudk\\CodeGenerator\\": "tests/"
         }
     },
     "config": {

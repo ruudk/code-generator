@@ -1,6 +1,5 @@
 /.github export-ignore
 /examples export-ignore
-/hooks export-ignore
 /tests export-ignore
 .* export-ignore
 /captainhook.json export-ignore

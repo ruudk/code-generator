@@ -19,7 +19,7 @@
                 }
             },
             {
-                "action": "\\Ruudk\\CodeGenerator\\Hooks\\SyncReadmeExamples"
+                "action": "\\Ruudk\\ReadmeExamplesSyncHook\\SyncReadmeExamples"
             },
             {
                 "action": "vendor/bin/php-cs-fixer fix"
