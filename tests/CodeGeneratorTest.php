@@ -782,4 +782,94 @@ final class CodeGeneratorTest extends TestCase
 
         self::assertSame($expected, $result);
     }
+
+    public function testDumpPreventsConsecutiveNewlines() : void
+    {
+        $generator = new CodeGenerator('App\\Services');
+
+        $result = $generator->dump(function () {
+            yield 'class UserService';
+            yield '{';
+            yield '';
+            yield '';
+            yield '';
+            yield '    public function getUser(): User';
+            yield '    {';
+            yield '';
+            yield '';
+            yield '        return new User();';
+            yield '    }';
+            yield '';
+            yield '';
+            yield '';
+            yield '}';
+        });
+
+        $expected = <<<'PHP'
+            <?php
+
+            declare(strict_types=1);
+
+            namespace App\Services;
+
+            class UserService
+            {
+
+                public function getUser(): User
+                {
+
+                    return new User();
+                }
+
+            }
+
+            PHP;
+
+        self::assertSame($expected, $result);
+    }
+
+    public function testDumpPreventsConsecutiveNewlinesWithGroups() : void
+    {
+        $generator = new CodeGenerator();
+
+        $result = $generator->dump([
+            'class Test {',
+            '',
+            '',
+            Group::indent(1, [
+                '',
+                '',
+                'public function method()',
+                '{',
+                Group::indent(1, [
+                    '',
+                    '',
+                    'return true;',
+                ]),
+                '}',
+            ]),
+            '',
+            '',
+            '}',
+        ]);
+
+        $expected = <<<'PHP'
+            <?php
+
+            declare(strict_types=1);
+
+            class Test {
+
+                public function method()
+                {
+
+                    return true;
+                }
+
+            }
+
+            PHP;
+
+        self::assertSame($expected, $result);
+    }
 }

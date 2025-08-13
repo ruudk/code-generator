@@ -31,30 +31,29 @@ final class CodeGenerator
     {
         $resolvedContent = self::resolveIterable($iterable);
 
-        return rtrim(
-            ltrim(
-                implode(
-                    PHP_EOL,
-                    self::resolveIterable($this->maybeIndent(function () use ($resolvedContent) {
-                        yield '<?php';
-                        yield '';
-                        yield 'declare(strict_types=1);';
-                        yield '';
-
-                        if ($this->namespace !== null) {
-                            yield sprintf('namespace %s;', $this->namespace);
-                            yield '';
-                        }
-
-                        yield from $this->maybeDump([], $this->dumpImports(), ['']);
-
-                        yield from $resolvedContent;
-                    })),
-                ),
-                ' ',
-            ),
+        $output = implode(
             PHP_EOL,
-        ) . PHP_EOL;
+            self::resolveIterable($this->maybeIndent(function () use ($resolvedContent) {
+                yield '<?php';
+                yield '';
+                yield 'declare(strict_types=1);';
+                yield '';
+
+                if ($this->namespace !== null) {
+                    yield sprintf('namespace %s;', $this->namespace);
+                    yield '';
+                }
+
+                yield from $this->maybeDump([], $this->dumpImports(), ['']);
+
+                yield from $resolvedContent;
+            })),
+        );
+
+        // Replace consecutive newlines with a single newline
+        $output = preg_replace('/(\r?\n){3,}/', PHP_EOL . PHP_EOL, $output);
+
+        return rtrim(ltrim($output, ' '), PHP_EOL) . PHP_EOL;
     }
 
     /**
