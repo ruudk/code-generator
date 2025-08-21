@@ -1167,4 +1167,294 @@ final class CodeGeneratorTest extends TestCase
 
         self::assertSame($expected, $code);
     }
+
+    public function testPrefixWithSimpleArray() : void
+    {
+        $generator = new CodeGenerator();
+
+        $result = iterator_to_array($generator->prefix('// ', ['line1', 'line2', 'line3']));
+
+        self::assertSame(['// line1', '// line2', '// line3'], $result);
+    }
+
+    public function testPrefixWithMultilineString() : void
+    {
+        $generator = new CodeGenerator();
+
+        $result = iterator_to_array($generator->prefix('> ', "first line\nsecond line\nthird line"));
+
+        self::assertSame(['> first line', '> second line', '> third line'], $result);
+    }
+
+    public function testPrefixWithGroup() : void
+    {
+        $generator = new CodeGenerator();
+
+        $data = function () {
+            yield 'class Example';
+            yield '{';
+            yield Group::indent([
+                'public function test()',
+                '{',
+                Group::indent(['return true;']),
+                '}',
+            ]);
+            yield '}';
+        };
+
+        $prefixed = $generator->prefix('// ', $data);
+
+        $code = $generator->dump($prefixed);
+
+        $expected = <<<'PHP'
+            <?php
+
+            declare(strict_types=1);
+
+            // class Example
+            // {
+                // public function test()
+                // {
+                    // return true;
+                // }
+            // }
+
+            PHP;
+
+        self::assertSame($expected, $code);
+    }
+
+    public function testCommentWithSimpleArray() : void
+    {
+        $generator = new CodeGenerator();
+
+        $result = iterator_to_array($generator->comment(['line1', 'line2', 'line3']));
+
+        self::assertSame(['// line1', '// line2', '// line3'], $result);
+    }
+
+    public function testCommentWithMultilineString() : void
+    {
+        $generator = new CodeGenerator();
+
+        $result = iterator_to_array($generator->comment("first line\nsecond line"));
+
+        self::assertSame(['// first line', '// second line'], $result);
+    }
+
+    public function testBlockComment() : void
+    {
+        $generator = new CodeGenerator();
+
+        $data = [
+            'This is a block comment',
+            'with multiple lines',
+            'of text',
+        ];
+
+        $result = iterator_to_array($generator->blockComment($data));
+
+        self::assertSame([
+            '/*',
+            ' * This is a block comment',
+            ' * with multiple lines',
+            ' * of text',
+            ' */',
+        ], $result);
+    }
+
+    public function testBlockCommentWithMultilineString() : void
+    {
+        $generator = new CodeGenerator();
+
+        $result = iterator_to_array($generator->blockComment("Line 1\nLine 2\nLine 3"));
+
+        self::assertSame([
+            '/*',
+            ' * Line 1',
+            ' * Line 2',
+            ' * Line 3',
+            ' */',
+        ], $result);
+    }
+
+    public function testDocComment() : void
+    {
+        $generator = new CodeGenerator();
+
+        $data = [
+            'This is a PHPDoc comment',
+            '@param string $name The name parameter',
+            '@return void',
+        ];
+
+        $result = iterator_to_array($generator->docComment($data));
+
+        self::assertSame([
+            '/**',
+            ' * This is a PHPDoc comment',
+            ' * @param string $name The name parameter',
+            ' * @return void',
+            ' */',
+        ], $result);
+    }
+
+    public function testDocCommentWithFullDump() : void
+    {
+        $generator = new CodeGenerator();
+
+        $code = $generator->dump([
+            $generator->docComment([
+                'Calculate the sum of two numbers',
+                '',
+                '@param int $a First number',
+                '@param int $b Second number',
+                '@return int The sum',
+            ]),
+            'function add(int $a, int $b): int',
+            '{',
+            Group::indent(['return $a + $b;']),
+            '}',
+        ]);
+
+        $expected = <<<'PHP'
+            <?php
+
+            declare(strict_types=1);
+
+            /**
+             * Calculate the sum of two numbers
+             * 
+             * @param int $a First number
+             * @param int $b Second number
+             * @return int The sum
+             */
+            function add(int $a, int $b): int
+            {
+                return $a + $b;
+            }
+
+            PHP;
+
+        self::assertSame($expected, $code);
+    }
+
+    public function testCommentWithGroup() : void
+    {
+        $generator = new CodeGenerator();
+
+        $data = [
+            'class Test',
+            '{',
+            Group::indent([
+                'public function method()',
+                '{',
+                Group::indent(['return true;']),
+                '}',
+            ]),
+            '}',
+        ];
+
+        $commented = $generator->comment($data);
+        $code = $generator->dump($commented);
+
+        $expected = <<<'PHP'
+            <?php
+
+            declare(strict_types=1);
+
+            // class Test
+            // {
+                // public function method()
+                // {
+                    // return true;
+                // }
+            // }
+
+            PHP;
+
+        self::assertSame($expected, $code);
+    }
+
+    public function testBlockCommentWithGroup() : void
+    {
+        $generator = new CodeGenerator();
+
+        $data = [
+            'Example code:',
+            Group::indent([
+                'if ($condition) {',
+                Group::indent(['return true;']),
+                '}',
+            ]),
+        ];
+
+        $result = $generator->blockComment($data);
+        $code = $generator->dump($result);
+
+        $expected = <<<'PHP'
+            <?php
+
+            declare(strict_types=1);
+
+            /*
+             * Example code:
+                 * if ($condition) {
+                     * return true;
+                 * }
+             */
+
+            PHP;
+
+        self::assertSame($expected, $code);
+    }
+
+    public function testBlockCommentWithEmptyContent() : void
+    {
+        $generator = new CodeGenerator();
+
+        $result = iterator_to_array($generator->blockComment([]));
+
+        self::assertSame([], $result);
+    }
+
+    public function testDocCommentWithEmptyContent() : void
+    {
+        $generator = new CodeGenerator();
+
+        $result = iterator_to_array($generator->docComment([]));
+
+        self::assertSame([], $result);
+    }
+
+    public function testCommentWithEmptyContent() : void
+    {
+        $generator = new CodeGenerator();
+
+        $result = iterator_to_array($generator->comment([]));
+
+        self::assertSame([], $result);
+    }
+
+    public function testBlockCommentWithEmptyString() : void
+    {
+        $generator = new CodeGenerator();
+
+        $result = iterator_to_array($generator->blockComment(''));
+
+        self::assertSame([
+            '/*',
+            ' * ',
+            ' */',
+        ], $result);
+    }
+
+    public function testDocCommentWithEmptyGenerator() : void
+    {
+        $generator = new CodeGenerator();
+
+        $result = iterator_to_array($generator->docComment([]));
+
+        self::assertSame([], $result);
+    }
 }

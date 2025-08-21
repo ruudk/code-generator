@@ -637,4 +637,62 @@ final class CodeGenerator
 
         return $resolved;
     }
+
+    /**
+     * Adds a prefix to every line of the iterable
+     *
+     * @param CodeLines $data
+     * @return Generator<string|Group>
+     */
+    public function prefix(string $prefix, array | Closure | Generator | string $data) : Generator
+    {
+        foreach (CodeGenerator::resolveIterable($data) as $line) {
+            if ($line instanceof Group) {
+                yield Group::indent($this->prefix($prefix, $line->lines), $line->indention);
+
+                continue;
+            }
+
+            foreach (explode(PHP_EOL, $line) as $singleLine) {
+                yield $prefix . $singleLine;
+            }
+        }
+    }
+
+    /**
+     * Adds single-line comment prefix to every line
+     *
+     * @param CodeLines $data
+     * @return Generator<string|Group>
+     */
+    public function comment(array | Closure | Generator | string $data) : Generator
+    {
+        yield from $this->prefix('// ', $data);
+    }
+
+    /**
+     * Wraps content in a block comment
+     *
+     * @param CodeLines $data
+     * @return Generator<string|Group>
+     */
+    public function blockComment(array | Closure | Generator | string $data) : Generator
+    {
+        foreach ($this->maybeDump(['/*'], $this->prefix(' * ', $data), [' */']) as $line) {
+            yield $line;
+        }
+    }
+
+    /**
+     * Wraps content in a PHPDoc comment
+     *
+     * @param CodeLines $data
+     * @return Generator<string|Group>
+     */
+    public function docComment(array | Closure | Generator | string $data) : Generator
+    {
+        foreach ($this->maybeDump(['/**'], $this->prefix(' * ', $data), [' */']) as $line) {
+            yield $line;
+        }
+    }
 }
