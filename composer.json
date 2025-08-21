@@ -1,6 +1,7 @@
 {
     "name": "ruudk/code-generator",
-    "description": "A library for generating beautiful PHP code with automatic namespace import management.",
+    "description": "Yield your code line by line: let generators handle indentation, formatting, and structure for you",
+    "keywords": ["dev", "code generator"],
     "license": "MIT",
     "type": "library",
     "authors": [

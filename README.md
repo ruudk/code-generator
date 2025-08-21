@@ -1,4 +1,8 @@
 <p align="center">
+    <strong>Code Generator for PHP</strong><br>
+    <em>Yield your code line by line: let generators handle indentation, formatting, and structure for you</em>
+</p>
+<p align="center">
     <a href="https://packagist.org/packages/ruudk/code-generator"><img src="https://poser.pugx.org/ruudk/code-generator/v?style=for-the-badge" alt="Latest Stable Version"></a>
     <a href="https://packagist.org/packages/ruudk/code-generator"><img src="https://poser.pugx.org/ruudk/code-generator/require/php?style=for-the-badge" alt="PHP Version Require"></a>
     <a href="https://packagist.org/packages/ruudk/code-generator"><img src="https://poser.pugx.org/ruudk/code-generator/downloads?style=for-the-badge" alt="Total Downloads"></a>
@@ -9,17 +13,80 @@
 
 # Code Generator
 
-A library for generating beautiful PHP code with automatic namespace import management.
+Transform the way you generate PHP code! This library makes code generation feel natural and elegant - just yield your lines and watch as perfectly formatted, beautifully structured PHP emerges with automatic namespace imports, proper indentation, and clean syntax.
 
-## Installation
+## ✨ Why This Library?
 
-Install the library via Composer:
+Ever struggled with generating PHP code? String concatenation getting messy? Indentation driving you crazy? **This is your solution!**
+
+🎯 **Write code that writes code** - but make it beautiful  
+🎯 **Yield line by line** - no string concatenation nightmares  
+🎯 **Automatic everything** - imports, indentation, formatting handled for you  
+🎯 **Composable generators** - chain, wrap, and transform with ease  
+🎯 **Zero boilerplate** - focus on what to generate, not how  
+
+## 🚀 Key Features
+
+### 🎨 Beautiful Output, Every Time
+- **Smart namespace management** - imports are automatically collected and organized
+- **Perfect indentation** - just yield your lines, nesting is handled automatically  
+- **Clean formatting** - proper spacing, consistent style, readable code
+
+### 🔧 Powerful Generator Toolkit
+- **`indent()`** - Auto-indent nested code blocks
+- **`join()`, `wrap()`, `prefix()`, `suffix()`** - Transform and compose generators
+- **`comment()`, `blockComment()`, `docComment()`** - Generate any comment style
+- **`dumpCall()`, `dumpAttribute()`** - Smart method calls and attributes
+- **`statement()`** - Auto-add semicolons where needed
+
+### 🎭 Flexibility First
+- **Yield strings, arrays, or generators** - mix and match as needed
+- **Compose generators** - results can be wrapped, joined, and transformed
+- **Conditional generation** - `maybeWrap()` for optional structures
+- **Multi-line strings** - automatic HEREDOC/NOWDOC handling
+
+## 📦 Get Started in Seconds!
+
+Install via Composer and start generating beautiful code immediately:
 
 ```bash
-composer require ruudk/code-generator
+composer require ruudk/code-generator --dev
 ```
 
-## Example
+That's it! You're ready to transform your PHP code generation. 🚀
+
+## 💡 The Magic: Before & After
+
+### ❌ Before (The Old Way)
+```php
+// Manual string concatenation, tracking indentation, managing imports...
+$code = "<?php\n\n";
+$code .= "declare(strict_types=1);\n\n";
+$code .= "namespace Example\\Demo;\n\n";
+// Manually tracking what needs to be imported
+$code .= "use DateTimeImmutable;\n";
+$code .= "use Example\\Attributes\\Something;\n";
+$code .= "use Example\\Demo;\n";
+$code .= "use Example\\Parent;\n\n";
+$code .= "// Auto-generated example file\n\n";
+$code .= "#[Something]\n";
+$code .= "final readonly class Demo extends Parent\n";
+$code .= "{\n";
+$code .= "    public function __construct(\n";
+$code .= "        private DateTimeImmutable \$date,\n";  // Manual indentation!
+$code .= "    ) {\n";
+$code .= "        parent::__construct(\n";
+$code .= "            'Hello, World!',\n";
+$code .= "            true,\n";
+$code .= "        );\n";
+$code .= "    }\n";
+$code .= "}\n";
+
+// 😱 Imagine maintaining this for complex files!
+```
+
+### ✅ After (The Generator Way)
+See the example below - clean, maintainable, and beautiful! The generator handles all the complexity for you.
 
 <!-- source: examples/class.php -->
 ```php
@@ -561,26 +628,18 @@ function helperFunction(string $input): string
 }
 ```
 
-## Development
+## 💖 Support This Project
 
-### Running Tests
+Love this tool? Help me keep building awesome open source software!
 
-```bash
-vendor/bin/phpunit
-```
+[![Sponsor](https://img.shields.io/badge/Sponsor-%E2%9D%A4-pink)](https://github.com/sponsors/ruudk)
 
-### Static Analysis
+Your sponsorship helps me dedicate more time to maintaining and improving this project. Every contribution, no matter the size, makes a difference!
 
-```bash
-vendor/bin/phpstan analyse
-```
+## 🤝 Contributing
 
-### Code Style
+I welcome contributions! Whether it's a bug fix, new feature, or documentation improvement, I'd love to see your PRs.
 
-```bash
-vendor/bin/php-cs-fixer fix
-```
+## 📄 License
 
-## License
-
-This library is released under the MIT License. See the [LICENSE](LICENSE) file for details.
+MIT License – Free to use in your projects! If you're using this and finding value, please consider [sponsoring](https://github.com/sponsors/ruudk) to support continued development.
