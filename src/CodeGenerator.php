@@ -629,7 +629,7 @@ final class CodeGenerator
         $resolved = [];
         foreach ($iterable as $item) {
             if ($item instanceof Generator) {
-                $resolved = array_merge($resolved, iterator_to_array($item));
+                $resolved = array_merge($resolved, iterator_to_array($item, false));
             } else {
                 $resolved[] = $item;
             }
@@ -678,9 +678,7 @@ final class CodeGenerator
      */
     public function blockComment(array | Closure | Generator | string $data) : Generator
     {
-        foreach ($this->maybeDump(['/*'], $this->prefix(' * ', $data), [' */']) as $line) {
-            yield $line;
-        }
+        yield from $this->maybeDump('/*', $this->prefix(' * ', $data), ' */');
     }
 
     /**
@@ -691,8 +689,6 @@ final class CodeGenerator
      */
     public function docComment(array | Closure | Generator | string $data) : Generator
     {
-        foreach ($this->maybeDump(['/**'], $this->prefix(' * ', $data), [' */']) as $line) {
-            yield $line;
-        }
+        yield from $this->maybeDump('/**', $this->prefix(' * ', $data), ' */');
     }
 }
