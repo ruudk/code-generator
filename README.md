@@ -100,7 +100,7 @@ include 'vendor/autoload.php';
 
 $generator = new CodeGenerator('Example\Demo');
 
-echo $generator->dump([
+echo $generator->dumpFile([
     '// Auto-generated example file',
     '',
 
@@ -133,6 +133,17 @@ echo $generator->dump([
 
 <!-- output: examples/class.php -->
 ```php
+<?php
+
+declare(strict_types=1);
+
+namespace Example\Demo;
+
+use DateTimeImmutable;
+use Example\Attributes\Something;
+use Example\Demo;
+use Example\Parent;
+
 // Auto-generated example file
 
 #[Something]
@@ -165,7 +176,7 @@ include 'vendor/autoload.php';
 $generator = new CodeGenerator('Example\Demo');
 
 // First, let's see what happens step by step
-echo $generator->dump(function () use ($generator) {
+echo $generator->dumpFile(function () use ($generator) {
     // Comments
     yield '// This file demonstrates ALL CodeGenerator features';
     yield '// Auto-generated example file';
@@ -458,6 +469,29 @@ echo $generator->dump(function () use ($generator) {
 
 <!-- output: examples/example.php -->
 ```php
+<?php
+
+declare(strict_types=1);
+
+namespace Example\Demo;
+
+use App\Enums\Status;
+use App\Services\MainService;
+use DateTime;
+use DateTimeImmutable;
+use DateTimeInterface;
+use Doctrine\Common\Collections\Collection;
+use Example\Attributes\Entity;
+use Example\Attributes\Table;
+use Example\BaseClass;
+use Example\Interfaces;
+use Example\Interfaces\BaseInterface;
+use Example\Interfaces\FirstInterface;
+use Example\SomeClass;
+use Logger;
+use self;
+use stdClass;
+
 // This file demonstrates ALL CodeGenerator features
 // Auto-generated example file
 

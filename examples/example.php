@@ -10,7 +10,7 @@ include '../vendor/autoload.php';
 $generator = new CodeGenerator('Example\Demo');
 
 // First, let's see what happens step by step
-echo $generator->dump(function () use ($generator) {
+echo $generator->dumpFile(function () use ($generator) {
     // Comments
     yield '// This file demonstrates ALL CodeGenerator features';
     yield '// Auto-generated example file';

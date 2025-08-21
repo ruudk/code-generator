@@ -8,7 +8,7 @@ include '../vendor/autoload.php';
 
 $generator = new CodeGenerator('Example\Demo');
 
-echo $generator->dump([
+echo $generator->dumpFile([
     '// Auto-generated example file',
     '',
 
