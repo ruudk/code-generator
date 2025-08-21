@@ -477,7 +477,13 @@ final class CodeGenerator
 
                 if ($line instanceof Group && $first !== null) {
                     $prefix = $first instanceof Group ? '' : (string) $first;
-                    yield Group::indent($this->prefixFirst($prefix, $line->lines), $line->indention);
+                    $lines = self::resolveIterable($line->lines);
+
+                    if ($lines === []) {
+                        yield $prefix;
+                    } else {
+                        yield Group::indent($this->prefixFirst($prefix, $lines), $line->indention);
+                    }
 
                     continue;
                 }

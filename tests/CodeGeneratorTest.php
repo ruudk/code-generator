@@ -786,9 +786,8 @@ final class CodeGeneratorTest extends TestCase
 
         $result = $this->generator->joinFirstPair($data);
 
-        // Note: When the second element is an empty group, 'first' gets lost
-        // This might be unexpected behavior
         $expected = <<<'PHP'
+            first
             third
             PHP;
 
