@@ -133,17 +133,6 @@ echo $generator->dump([
 
 <!-- output: examples/class.php -->
 ```php
-<?php
-
-declare(strict_types=1);
-
-namespace Example\Demo;
-
-use DateTimeImmutable;
-use Example\Attributes\Something;
-use Example\Demo;
-use Example\Parent;
-
 // Auto-generated example file
 
 #[Something]
@@ -469,29 +458,6 @@ echo $generator->dump(function () use ($generator) {
 
 <!-- output: examples/example.php -->
 ```php
-<?php
-
-declare(strict_types=1);
-
-namespace Example\Demo;
-
-use App\Enums\Status;
-use App\Services\MainService;
-use DateTime;
-use DateTimeImmutable;
-use DateTimeInterface;
-use Doctrine\Common\Collections\Collection;
-use Example\Attributes\Entity;
-use Example\Attributes\Table;
-use Example\BaseClass;
-use Example\Interfaces;
-use Example\Interfaces\BaseInterface;
-use Example\Interfaces\FirstInterface;
-use Example\SomeClass;
-use Logger;
-use self;
-use stdClass;
-
 // This file demonstrates ALL CodeGenerator features
 // Auto-generated example file
 

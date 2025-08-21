@@ -30,101 +30,99 @@ final class CodeGeneratorTest extends TestCase
     /**
      * @param CodeLines $content
      */
-    private function assertGeneratedCode(string $expected, array | Closure | Generator | string $content) : void
+    private function assertDump(string $expected, array | Closure | Generator | string $content) : void
     {
         self::assertSame($expected, $this->generator->dump($content));
+    }
+
+    /**
+     * @param CodeLines $content
+     */
+    private function assertDumpFile(string $expected, array | Closure | Generator | string $content) : void
+    {
+        self::assertSame($expected, $this->generator->dumpFile($content));
     }
 
     public function testConstructorWithNamespace() : void
     {
         $this->generator = new CodeGenerator('App\\Models');
 
-        $expected = <<<'PHP'
-            <?php
+        $this->assertDumpFile(
+            <<<'PHP'
+                <?php
 
-            declare(strict_types=1);
+                declare(strict_types=1);
 
-            namespace App\Models;
+                namespace App\Models;
 
-            PHP;
-
-        $this->assertGeneratedCode($expected, []);
+                PHP,
+            [],
+        );
     }
 
     public function testConstructorWithoutNamespace() : void
     {
-        $expected = <<<'PHP'
-            <?php
+        $this->assertDumpFile(
+            <<<'PHP'
+                <?php
 
-            declare(strict_types=1);
+                declare(strict_types=1);
 
-            PHP;
-
-        $this->assertGeneratedCode($expected, []);
+                PHP,
+            [],
+        );
     }
 
     public function testDumpWithSimpleContent() : void
     {
-        $expected = <<<'PHP'
-            <?php
-
-            declare(strict_types=1);
-
-            class Foo
-            {
-            }
-
-            PHP;
-
-        $this->assertGeneratedCode($expected, ['class Foo', '{', '}']);
+        $this->assertDump(
+            <<<'PHP'
+                class Foo
+                {
+                }
+                PHP,
+            ['class Foo', '{', '}'],
+        );
     }
 
     public function testDumpWithCallable() : void
     {
-        $expected = <<<'PHP'
-            <?php
-
-            declare(strict_types=1);
-
-            class Bar
-            {
-            }
-
-            PHP;
-
-        $this->assertGeneratedCode($expected, function () {
-            yield 'class Bar';
-            yield '{';
-            yield '}';
-        });
+        $this->assertDump(
+            <<<'PHP'
+                class Bar
+                {
+                }
+                PHP,
+            function () {
+                yield 'class Bar';
+                yield '{';
+                yield '}';
+            },
+        );
     }
 
     public function testDumpWithIndentation() : void
     {
-        $expected = <<<'PHP'
-            <?php
-
-            declare(strict_types=1);
-
-            class Test {
-                public function method()
-                {
-                    return true;
+        $this->assertDump(
+            <<<'PHP'
+                class Test {
+                    public function method()
+                    {
+                        return true;
+                    }
                 }
-            }
-
-            PHP;
-
-        $this->assertGeneratedCode($expected, [
-            'class Test {',
-            Group::indent([
-                'public function method()',
-                '{',
-                Group::indent(['return true;']),
+                PHP,
+            [
+                'class Test {',
+                Group::indent([
+                    'public function method()',
+                    '{',
+                    Group::indent(['return true;']),
+                    '}',
+                ]),
                 '}',
-            ]),
-            '}',
-        ]);
+            ],
+        );
     }
 
     public function testImportClass() : void
@@ -135,18 +133,19 @@ final class CodeGeneratorTest extends TestCase
 
         self::assertSame('User', $alias);
 
-        $expected = <<<'PHP'
-            <?php
+        $this->assertDumpFile(
+            <<<'PHP'
+                <?php
 
-            declare(strict_types=1);
+                declare(strict_types=1);
 
-            namespace App\Services;
+                namespace App\Services;
 
-            use App\Models\User;
+                use App\Models\User;
 
-            PHP;
-
-        $this->assertGeneratedCode($expected, []);
+                PHP,
+            [],
+        );
     }
 
     public function testImportClassWithConflict() : void
@@ -157,17 +156,18 @@ final class CodeGeneratorTest extends TestCase
         self::assertSame('User', $alias1);
         self::assertSame('User2', $alias2);
 
-        $expected = <<<'PHP'
-            <?php
+        $this->assertDumpFile(
+            <<<'PHP'
+                <?php
 
-            declare(strict_types=1);
+                declare(strict_types=1);
 
-            use App\Entities\User as User2;
-            use App\Models\User;
+                use App\Entities\User as User2;
+                use App\Models\User;
 
-            PHP;
-
-        $this->assertGeneratedCode($expected, []);
+                PHP,
+            [],
+        );
     }
 
     public function testImportFunction() : void
@@ -176,16 +176,17 @@ final class CodeGeneratorTest extends TestCase
 
         self::assertSame('function array_map', $alias);
 
-        $expected = <<<'PHP'
-            <?php
+        $this->assertDumpFile(
+            <<<'PHP'
+                <?php
 
-            declare(strict_types=1);
+                declare(strict_types=1);
 
-            use function array_map;
+                use function array_map;
 
-            PHP;
-
-        $this->assertGeneratedCode($expected, []);
+                PHP,
+            [],
+        );
     }
 
     public function testImportEnum() : void
@@ -194,16 +195,17 @@ final class CodeGeneratorTest extends TestCase
 
         self::assertSame('TestEnum::OPTION_ONE', $reference);
 
-        $expected = <<<'PHP'
-            <?php
+        $this->assertDumpFile(
+            <<<'PHP'
+                <?php
 
-            declare(strict_types=1);
+                declare(strict_types=1);
 
-            use Ruudk\CodeGenerator\Fixtures\TestEnum;
+                use Ruudk\CodeGenerator\Fixtures\TestEnum;
 
-            PHP;
-
-        $this->assertGeneratedCode($expected, []);
+                PHP,
+            [],
+        );
     }
 
     public function testImportByParent() : void
@@ -212,16 +214,17 @@ final class CodeGeneratorTest extends TestCase
 
         self::assertSame('Models\\User', $reference);
 
-        $expected = <<<'PHP'
-            <?php
+        $this->assertDumpFile(
+            <<<'PHP'
+                <?php
 
-            declare(strict_types=1);
+                declare(strict_types=1);
 
-            use App\Models;
+                use App\Models;
 
-            PHP;
-
-        $this->assertGeneratedCode($expected, []);
+                PHP,
+            [],
+        );
     }
 
     public function testImportSameNamespace() : void
@@ -230,16 +233,17 @@ final class CodeGeneratorTest extends TestCase
 
         $this->generator->import('App\\Models\\User');
 
-        $expected = <<<'PHP'
-            <?php
+        $this->assertDumpFile(
+            <<<'PHP'
+                <?php
 
-            declare(strict_types=1);
+                declare(strict_types=1);
 
-            namespace App\Models;
+                namespace App\Models;
 
-            PHP;
-
-        $this->assertGeneratedCode($expected, []);
+                PHP,
+            [],
+        );
     }
 
     public function testSplitFqcn() : void
@@ -260,402 +264,308 @@ final class CodeGeneratorTest extends TestCase
 
     public function testDumpAttribute() : void
     {
-        $result = $this->generator->dumpAttribute('App\\Attributes\\Required');
-
-        self::assertSame('#[Required]', $result);
+        self::assertSame(
+            '#[Required]',
+            $this->generator->dumpAttribute('App\\Attributes\\Required'),
+        );
     }
 
     public function testDumpClassReference() : void
     {
-        $result = $this->generator->dumpClassReference('App\\Models\\User');
-
-        self::assertSame('User::class', $result);
+        self::assertSame(
+            'User::class',
+            $this->generator->dumpClassReference('App\\Models\\User'),
+        );
     }
 
     public function testDumpClassReferenceWithoutImport() : void
     {
-        $result = $this->generator->dumpClassReference('App\\Models\\User', false);
-
-        self::assertSame('\\App\\Models\\User::class', $result);
+        self::assertSame(
+            '\\App\\Models\\User::class',
+            $this->generator->dumpClassReference('App\\Models\\User', false),
+        );
     }
 
     public function testDumpClassReferenceByParent() : void
     {
-        $result = $this->generator->dumpClassReference('App\\Models\\User', true, true);
-
-        self::assertSame('Models\\User::class', $result);
+        self::assertSame(
+            'Models\\User::class',
+            $this->generator->dumpClassReference('App\\Models\\User', true, true),
+        );
     }
 
     public function testMaybeNowDocWithSingleLine() : void
     {
-        $result = $this->generator->maybeNowDoc('single line');
-
-        self::assertSame("'single line'", $result);
+        self::assertSame(
+            "'single line'",
+            $this->generator->maybeNowDoc('single line'),
+        );
     }
 
     public function testMaybeNowDocWithMultipleLines() : void
     {
-        $result = $this->generator->maybeNowDoc("line 1\nline 2\nline 3");
-
-        $expected = <<<'PHP'
-            <<<'EOD'
-                line 1
-                line 2
-                line 3
-                EOD
-            PHP;
-
-        self::assertSame($expected, $result);
+        self::assertSame(
+            <<<'PHP'
+                <<<'EOD'
+                    line 1
+                    line 2
+                    line 3
+                    EOD
+                PHP,
+            $this->generator->maybeNowDoc("line 1\nline 2\nline 3"),
+        );
     }
 
     public function testMaybeNowDocWithCustomTag() : void
     {
-        $result = $this->generator->maybeNowDoc("multi\nline", 'SQL');
-
-        $expected = <<<'PHP'
-            <<<'SQL'
-                multi
-                line
-                SQL
-            PHP;
-
-        self::assertSame($expected, $result);
+        self::assertSame(
+            <<<'PHP'
+                <<<'SQL'
+                    multi
+                    line
+                    SQL
+                PHP,
+            $this->generator->maybeNowDoc("multi\nline", 'SQL'),
+        );
     }
 
     public function testStatement() : void
     {
-        $result = $this->generator->statement(['$x = 5']);
-        $expected = <<<'PHP'
-            <?php
-
-            declare(strict_types=1);
-
-            $x = 5;
-
-            PHP;
-
-        $this->assertGeneratedCode($expected, $result);
+        $this->assertDump(
+            '$x = 5;',
+            $this->generator->statement(['$x = 5']),
+        );
     }
 
     public function testStatementWithGroup() : void
     {
-        $result = $this->generator->statement([
-            'if ($condition)',
-            Group::indent(['return true']),
-        ]);
-        $expected = <<<'PHP'
-            <?php
-
-            declare(strict_types=1);
-
-            if ($condition)
-                return true;
-
-            PHP;
-
-        $this->assertGeneratedCode($expected, $result);
+        $this->assertDump(
+            <<<'PHP'
+                if ($condition)
+                    return true;
+                PHP,
+            $this->generator->statement([
+                'if ($condition)',
+                Group::indent(['return true']),
+            ]),
+        );
     }
 
     public function testSuffixLast() : void
     {
-        $result = $this->generator->suffixLast(',', ['item1', 'item2', 'item3']);
-        $expected = <<<'PHP'
-            <?php
-
-            declare(strict_types=1);
-
-            item1
-            item2
-            item3,
-
-            PHP;
-
-        $this->assertGeneratedCode($expected, $result);
+        $this->assertDump(
+            <<<'PHP'
+                item1
+                item2
+                item3,
+                PHP,
+            $this->generator->suffixLast(',', ['item1', 'item2', 'item3']),
+        );
     }
 
     public function testSuffixLastWithEmptyIterable() : void
     {
-        $result = $this->generator->suffixLast(',', []);
-        $expected = <<<'PHP'
-            <?php
-
-            declare(strict_types=1);
-
-            PHP;
-
-        $this->assertGeneratedCode($expected, $result);
+        self::assertSame(
+            '',
+            $this->generator->dump($this->generator->suffixLast(',', [])),
+        );
     }
 
     public function testWrap() : void
     {
-        $result = $this->generator->wrap('[', ['content'], ']');
-        $expected = <<<'PHP'
-            <?php
-
-            declare(strict_types=1);
-
-            [content]
-
-            PHP;
-
-        $this->assertGeneratedCode($expected, $result);
+        $this->assertDump(
+            '[content]',
+            $this->generator->wrap('[', ['content'], ']'),
+        );
     }
 
     public function testWrapWithMultipleLines() : void
     {
-        $result = $this->generator->wrap('(', ['line1', 'line2'], ')');
-        $expected = <<<'PHP'
-            <?php
-
-            declare(strict_types=1);
-
-            (line1
-            line2)
-
-            PHP;
-
-        $this->assertGeneratedCode($expected, $result);
+        $this->assertDump(
+            <<<'PHP'
+                (line1
+                line2)
+                PHP,
+            $this->generator->wrap('(', ['line1', 'line2'], ')'),
+        );
     }
 
     public function testMaybeWrapTrue() : void
     {
-        $result = $this->generator->maybeWrap(true, '(', ['content'], ')');
-        $expected = <<<'PHP'
-            <?php
-
-            declare(strict_types=1);
-
-            (content)
-
-            PHP;
-
-        $this->assertGeneratedCode($expected, $result);
+        $this->assertDump(
+            <<<'PHP'
+                (content)
+                PHP,
+            $this->generator->maybeWrap(true, '(', ['content'], ')'),
+        );
     }
 
     public function testMaybeWrapFalse() : void
     {
-        $result = $this->generator->maybeWrap(false, '(', ['content'], ')');
-        $expected = <<<'PHP'
-            <?php
-
-            declare(strict_types=1);
-
-            content
-
-            PHP;
-
-        $this->assertGeneratedCode($expected, $result);
+        $this->assertDump(
+            <<<'PHP'
+                content
+                PHP,
+            $this->generator->maybeWrap(false, '(', ['content'], ')'),
+        );
     }
 
     public function testPrefixFirst() : void
     {
-        $result = $this->generator->prefixFirst('> ', ['line1', 'line2', 'line3']);
-        $expected = <<<'PHP'
-            <?php
-
-            declare(strict_types=1);
-
-            > line1
-            line2
-            line3
-
-            PHP;
-
-        $this->assertGeneratedCode($expected, $result);
+        $this->assertDump(
+            <<<'PHP'
+                > line1
+                line2
+                line3
+                PHP,
+            $this->generator->prefixFirst('> ', ['line1', 'line2', 'line3']),
+        );
     }
 
     public function testPrefixFirstWithGroup() : void
     {
-        $group = Group::indent(['content']);
-        $result = $this->generator->prefixFirst('prefix: ', [$group]);
-        $expected = <<<'PHP'
-            <?php
-
-            declare(strict_types=1);
-
-                prefix: content
-
-            PHP;
-
-        $this->assertGeneratedCode($expected, $result);
+        $this->assertDump(
+            <<<'PHP'
+                    prefix: content
+                PHP,
+            $this->generator->prefixFirst('prefix: ', [Group::indent(['content'])]),
+        );
     }
 
     public function testSuffixFirst() : void
     {
-        $result = $this->generator->suffixFirst(':', ['key', 'value1', 'value2']);
-        $expected = <<<'PHP'
-            <?php
-
-            declare(strict_types=1);
-
-            key:
-            value1
-            value2
-
-            PHP;
-
-        $this->assertGeneratedCode($expected, $result);
+        $this->assertDump(
+            <<<'PHP'
+                key:
+                value1
+                value2
+                PHP,
+            $this->generator->suffixFirst(':', ['key', 'value1', 'value2']),
+        );
     }
 
     public function testJoin() : void
     {
-        $result = $this->generator->join(', ', ['item1', 'item2', 'item3']);
-
-        self::assertSame('item1, item2, item3', $result);
+        self::assertSame(
+            'item1, item2, item3',
+            $this->generator->join(', ', ['item1', 'item2', 'item3']),
+        );
     }
 
     public function testJoinWithGroups() : void
     {
-        $result = $this->generator->join(', ', ['item1', new Group('nested'), 'item3']);
-
-        self::assertSame('item1, , item3', $result);
+        self::assertSame(
+            'item1, , item3',
+            $this->generator->join(', ', ['item1', new Group('nested'), 'item3']),
+        );
     }
 
     public function testJoinFirstPairSimple() : void
     {
-        $result = $this->generator->joinFirstPair(['first', 'second', 'third']);
-        $expected = <<<'PHP'
-            <?php
-
-            declare(strict_types=1);
-
-            firstsecond
-            third
-
-            PHP;
-
-        $this->assertGeneratedCode($expected, $result);
+        $this->assertDump(
+            <<<'PHP'
+                firstsecond
+                third
+                PHP,
+            $this->generator->joinFirstPair(['first', 'second', 'third']),
+        );
     }
 
     public function testJoinFirstPairSingleElement() : void
     {
-        $result = $this->generator->joinFirstPair(['only']);
-        $expected = <<<'PHP'
-            <?php
-
-            declare(strict_types=1);
-
-            only
-
-            PHP;
-
-        $this->assertGeneratedCode($expected, $result);
+        $this->assertDump(
+            <<<'PHP'
+                only
+                PHP,
+            $this->generator->joinFirstPair(['only']),
+        );
     }
 
     public function testJoinFirstPairWithGroup() : void
     {
-        $group = Group::indent(['content']);
-        $result = $this->generator->joinFirstPair(['prefix', $group, 'third']);
-        $expected = <<<'PHP'
-            <?php
-
-            declare(strict_types=1);
-
-                prefixcontent
-            third
-
-            PHP;
-
-        $this->assertGeneratedCode($expected, $result);
+        $this->assertDump(
+            <<<'PHP'
+                    prefixcontent
+                third
+                PHP,
+            $this->generator->joinFirstPair(['prefix', Group::indent(['content']), 'third']),
+        );
     }
 
     public function testAllSuffix() : void
     {
-        $result = $this->generator->allSuffix(',', ['item1', 'item2', 'item3']);
-        $expected = <<<'PHP'
-            <?php
-
-            declare(strict_types=1);
-
-            item1,
-            item2,
-            item3,
-
-            PHP;
-
-        $this->assertGeneratedCode($expected, $result);
+        $this->assertDump(
+            <<<'PHP'
+                item1,
+                item2,
+                item3,
+                PHP,
+            $this->generator->allSuffix(',', ['item1', 'item2', 'item3']),
+        );
     }
 
     public function testAllSuffixSkipsComments() : void
     {
-        $result = $this->generator->allSuffix(',', ['item1', '// comment', 'item2']);
-        $expected = <<<'PHP'
-            <?php
-
-            declare(strict_types=1);
-
-            item1,
-            // comment
-            item2,
-
-            PHP;
-
-        $this->assertGeneratedCode($expected, $result);
+        $this->assertDump(
+            <<<'PHP'
+                item1,
+                // comment
+                item2,
+                PHP,
+            $this->generator->allSuffix(',', ['item1', '// comment', 'item2']),
+        );
     }
 
     public function testAllSuffixWithGroup() : void
     {
-        $group = new Group(['item']);
-        $result = $this->generator->allSuffix(',', [$group]);
-        $expected = <<<'PHP'
-            <?php
-
-            declare(strict_types=1);
-
-            item,
-
-            PHP;
-
-        $this->assertGeneratedCode($expected, $result);
+        $this->assertDump(
+            'item,',
+            $this->generator->allSuffix(',', [new Group(['item'])]),
+        );
     }
 
     public function testDumpCallStaticMethod() : void
     {
-        $result = $this->generator->dumpCall('App\\Utils\\Helper', 'process', ['$data'], true);
-        $expected = <<<'PHP'
-            <?php
+        $this->assertDumpFile(
+            <<<'PHP'
+                <?php
 
-            declare(strict_types=1);
+                declare(strict_types=1);
 
-            use App\Utils\Helper;
+                use App\Utils\Helper;
 
-            Helper::process($data)
+                Helper::process($data)
 
-            PHP;
-
-        $this->assertGeneratedCode($expected, $result);
+                PHP,
+            $this->generator->dumpCall('App\\Utils\\Helper', 'process', ['$data'], true),
+        );
     }
 
     public function testDumpCallConstructor() : void
     {
-        $result = $this->generator->dumpCall('App\\Models\\User', '__construct', []);
-        $expected = <<<'PHP'
-            <?php
+        $this->assertDumpFile(
+            <<<'PHP'
+                <?php
 
-            declare(strict_types=1);
+                declare(strict_types=1);
 
-            use App\Models\User;
+                use App\Models\User;
 
-            new User()
+                new User()
 
-            PHP;
-
-        $this->assertGeneratedCode($expected, $result);
+                PHP,
+            $this->generator->dumpCall('App\\Models\\User', '__construct', []),
+        );
     }
 
     public function testDumpCallInstanceMethod() : void
     {
-        $result = $this->generator->dumpCall('$user', 'getName', []);
-        $expected = <<<'PHP'
-            <?php
-
-            declare(strict_types=1);
-
-            $user->getName()
-
-            PHP;
-
-        $this->assertGeneratedCode($expected, $result);
+        $this->assertDump(
+            <<<'PHP'
+                $user->getName()
+                PHP,
+            $this->generator->dumpCall('$user', 'getName'),
+        );
     }
 
     public function testDumpCallWithArrayOfGenerators() : void
@@ -668,120 +578,88 @@ final class CodeGeneratorTest extends TestCase
             yield 'false';
         };
 
-        $result = $this->generator->dumpCall('$var', 'method', [
-            $true(),
-            $false(),
-        ]);
-        $expected = <<<'PHP'
-            <?php
-
-            declare(strict_types=1);
-
-            $var->method(
-                true,
-                false,
-            )
-
-            PHP;
-
-        $this->assertGeneratedCode($expected, $result);
+        $this->assertDump(
+            <<<'PHP'
+                $var->method(
+                    true,
+                    false,
+                )
+                PHP,
+            $this->generator->dumpCall('$var', 'method', [
+                $true(),
+                $false(),
+            ]),
+        );
     }
 
     public function testDumpCallWithMultipleArguments() : void
     {
-        $result = $this->generator->dumpCall('$object', 'method', ['$arg1', '$arg2', '$arg3']);
-        $expected = <<<'PHP'
-            <?php
-
-            declare(strict_types=1);
-
-            $object->method(
-                $arg1,
-                $arg2,
-                $arg3,
-            )
-
-            PHP;
-
-        $this->assertGeneratedCode($expected, $result);
+        $this->assertDump(
+            <<<'PHP'
+                $object->method(
+                    $arg1,
+                    $arg2,
+                    $arg3,
+                )
+                PHP,
+            $this->generator->dumpCall('$object', 'method', ['$arg1', '$arg2', '$arg3']),
+        );
     }
 
     public function testDumpCallWithIterableObject() : void
     {
-        $result = $this->generator->dumpCall(['$object'], 'method', ['$arg']);
-        $expected = <<<'PHP'
-            <?php
-
-            declare(strict_types=1);
-
-            $object
-                ->method($arg)
-
-            PHP;
-
-        $this->assertGeneratedCode($expected, $result);
+        $this->assertDump(
+            <<<'PHP'
+                $object
+                    ->method($arg)
+                PHP,
+            $this->generator->dumpCall(['$object'], 'method', ['$arg']),
+        );
     }
 
     public function testDumpFunctionCall() : void
     {
-        $result = $this->generator->dumpFunctionCall('array_map', ['$callback', '$array']);
-        $expected = <<<'PHP'
-            <?php
-
-            declare(strict_types=1);
-
-            array_map(
-                $callback,
-                $array,
-            )
-
-            PHP;
-
-        $this->assertGeneratedCode($expected, $result);
+        $this->assertDump(
+            <<<'PHP'
+                array_map(
+                    $callback,
+                    $array,
+                )
+                PHP,
+            $this->generator->dumpFunctionCall('array_map', ['$callback', '$array']),
+        );
     }
 
     public function testDumpFunctionCallNoArgs() : void
     {
-        // Note: This is the current behavior - empty args results in no output
-        // This might be a bug that should be fixed in the implementation
         $result = $this->generator->dumpFunctionCall('time', []);
-        $expected = <<<'PHP'
-            <?php
+        $expected = 'time()';
 
-            declare(strict_types=1);
-
-            PHP;
-
-        $this->assertGeneratedCode($expected, $result);
+        self::assertSame($expected, $this->generator->dump($result));
     }
 
     public function testDumpFunctionCallSingleArg() : void
     {
-        $result = $this->generator->dumpFunctionCall('count', ['$array']);
-        $expected = <<<'PHP'
-            <?php
-
-            declare(strict_types=1);
-
-            count($array)
-
-            PHP;
-
-        $this->assertGeneratedCode($expected, $result);
+        $this->assertDump(
+            'count($array)',
+            $this->generator->dumpFunctionCall('count', ['$array']),
+        );
     }
 
     public function testResolveIterableWithString() : void
     {
-        $result = CodeGenerator::resolveIterable('test string');
-
-        self::assertSame(['test string'], $result);
+        self::assertSame(
+            ['test string'],
+            CodeGenerator::resolveIterable('test string'),
+        );
     }
 
     public function testResolveIterableWithArray() : void
     {
-        $result = CodeGenerator::resolveIterable(['line1', 'line2', 'line3']);
-
-        self::assertSame(['line1', 'line2', 'line3'], $result);
+        self::assertSame(
+            ['line1', 'line2', 'line3'],
+            CodeGenerator::resolveIterable(['line1', 'line2', 'line3']),
+        );
     }
 
     public function testResolveIterableWithCallable() : void
@@ -791,19 +669,21 @@ final class CodeGeneratorTest extends TestCase
             yield 'generated2';
         };
 
-        $result = CodeGenerator::resolveIterable($callable);
-
-        self::assertSame(['generated1', 'generated2'], $result);
+        self::assertSame(
+            ['generated1', 'generated2'],
+            CodeGenerator::resolveIterable($callable),
+        );
     }
 
     public function testResolveIterableWithGenerator() : void
     {
-        $result = CodeGenerator::resolveIterable(function () {
-            yield 'item1';
-            yield 'item2';
-        });
-
-        self::assertSame(['item1', 'item2'], $result);
+        self::assertSame(
+            ['item1', 'item2'],
+            CodeGenerator::resolveIterable(function () {
+                yield 'item1';
+                yield 'item2';
+            }),
+        );
     }
 
     public function testCompleteCodeGeneration() : void
@@ -837,7 +717,7 @@ final class CodeGeneratorTest extends TestCase
 
             PHP;
 
-        $this->assertGeneratedCode($expected, function () {
+        $this->assertDumpFile($expected, function () {
             yield 'class UserService';
             yield '{';
             yield Group::indent(function () {
@@ -879,28 +759,21 @@ final class CodeGeneratorTest extends TestCase
 
             PHP;
 
-        $this->assertGeneratedCode($expected, []);
+        $this->assertDumpFile($expected, []);
     }
 
     public function testSuffixFirstWithGroupAsFirstElement() : void
     {
-        $data = [
-            Group::indent(['inner content']),
-            'second line',
-        ];
-
-        $result = $this->generator->suffixFirst(',', $data);
-        $expected = <<<'PHP'
-            <?php
-
-            declare(strict_types=1);
-
-                inner content,
-            second line
-
-            PHP;
-
-        $this->assertGeneratedCode($expected, $result);
+        $this->assertDump(
+            <<<'PHP'
+                    inner content,
+                second line
+                PHP,
+            $this->generator->suffixFirst(',', [
+                Group::indent(['inner content']),
+                'second line',
+            ]),
+        );
     }
 
     public function testJoinFirstPairWithEmptySecondGroup() : void
@@ -916,879 +789,667 @@ final class CodeGeneratorTest extends TestCase
         // Note: When the second element is an empty group, 'first' gets lost
         // This might be unexpected behavior
         $expected = <<<'PHP'
-            <?php
-
-            declare(strict_types=1);
-
             third
-
             PHP;
 
-        $this->assertGeneratedCode($expected, $result);
+        $this->assertDump($expected, $result);
     }
 
     public function testDumpCallWithEmptyArgsOnIterable() : void
     {
-        $object = ['$object'];
-        $result = $this->generator->dumpCall($object, 'method', []);
-        $expected = <<<'PHP'
-            <?php
-
-            declare(strict_types=1);
-
-            $object
-                ->method()
-
-            PHP;
-
-        $this->assertGeneratedCode($expected, $result);
+        $this->assertDump(
+            <<<'PHP'
+                $object
+                    ->method()
+                PHP,
+            $this->generator->dumpCall(['$object'], 'method', []),
+        );
     }
 
     public function testDumpCallWithMultipleArgsOnIterable() : void
     {
-        $object = ['$object'];
-        $args = ['"arg1"', '"arg2"', '"arg3"'];
-        $result = $this->generator->dumpCall($object, 'method', $args, false, true);
-        $expected = <<<'PHP'
-            <?php
-
-            declare(strict_types=1);
-
-            $object
-                ->method(
-                    "arg1",
-                    "arg2",
-                    "arg3",
-                )
-
-            PHP;
-
-        $this->assertGeneratedCode($expected, $result);
+        $this->assertDump(
+            <<<'PHP'
+                $object
+                    ->method(
+                        "arg1",
+                        "arg2",
+                        "arg3",
+                    )
+                PHP,
+            $this->generator->dumpCall(['$object'], 'method', ['"arg1"', '"arg2"', '"arg3"'], false, true),
+        );
     }
 
-    public function testDumpWithNoImportsHasNoExtraNewline() : void
+    public function testDumpFileWithNoImportsHasNoExtraNewline() : void
     {
         $this->generator = new CodeGenerator('App\\Services');
 
-        $result = $this->generator->dump(['class Test {}']);
+        self::assertDumpFile(
+            <<<'PHP'
+                <?php
 
-        $expected = <<<'PHP'
-            <?php
+                declare(strict_types=1);
 
-            declare(strict_types=1);
+                namespace App\Services;
 
-            namespace App\Services;
+                class Test {}
 
-            class Test {}
-
-            PHP;
-
-        self::assertSame($expected, $result);
+                PHP,
+            ['class Test {}'],
+        );
     }
 
-    public function testDumpWithImportsHasProperSpacing() : void
+    public function testDumpFileWithImportsHasProperSpacing() : void
     {
         $this->generator = new CodeGenerator('App\\Services');
         $this->generator->import('App\\Models\\User');
 
-        $result = $this->generator->dump(['class Test {}']);
+        self::assertDumpFile(
+            <<<'PHP'
+                <?php
 
-        $expected = <<<'PHP'
-            <?php
+                declare(strict_types=1);
 
-            declare(strict_types=1);
+                namespace App\Services;
 
-            namespace App\Services;
+                use App\Models\User;
 
-            use App\Models\User;
+                class Test {}
 
-            class Test {}
-
-            PHP;
-
-        self::assertSame($expected, $result);
+                PHP,
+            ['class Test {}'],
+        );
     }
 
-    public function testDumpWithoutNamespaceAndNoImports() : void
+    public function testDumpFileWithoutNamespaceAndNoImports() : void
     {
-        $result = $this->generator->dump(['class Test {}']);
+        self::assertDumpFile(
+            <<<'PHP'
+                <?php
 
-        $expected = <<<'PHP'
-            <?php
+                declare(strict_types=1);
 
-            declare(strict_types=1);
+                class Test {}
 
-            class Test {}
-
-            PHP;
-
-        self::assertSame($expected, $result);
+                PHP,
+            ['class Test {}'],
+        );
     }
 
-    public function testDumpWithoutNamespaceButWithImports() : void
+    public function testDumpFileWithoutNamespaceButWithImports() : void
     {
         $this->generator->import('App\\Models\\User');
 
-        $result = $this->generator->dump(['class Test {}']);
+        self::assertDumpFile(
+            <<<'PHP'
+                <?php
 
-        $expected = <<<'PHP'
-            <?php
+                declare(strict_types=1);
 
-            declare(strict_types=1);
+                use App\Models\User;
 
-            use App\Models\User;
+                class Test {}
 
-            class Test {}
-
-            PHP;
-
-        self::assertSame($expected, $result);
+                PHP,
+            ['class Test {}'],
+        );
     }
 
     public function testDumpPreventsConsecutiveNewlines() : void
     {
-        $this->generator = new CodeGenerator('App\\Services');
-
-        $result = $this->generator->dump(function () {
-            yield 'class UserService';
-            yield '{';
-            yield '';
-            yield '';
-            yield '';
-            yield '    public function getUser(): User';
-            yield '    {';
-            yield '';
-            yield '';
-            yield '        return new User();';
-            yield '    }';
-            yield '';
-            yield '';
-            yield '';
-            yield '}';
-        });
-
-        $expected = <<<'PHP'
-            <?php
-
-            declare(strict_types=1);
-
-            namespace App\Services;
-
-            class UserService
-            {
-
-                public function getUser(): User
+        self::assertDump(
+            <<<'PHP'
+                class UserService
                 {
 
-                    return new User();
+                    public function getUser(): User
+                    {
+
+                        return new User();
+                    }
+
                 }
-
-            }
-
-            PHP;
-
-        self::assertSame($expected, $result);
+                PHP,
+            function () {
+                yield 'class UserService';
+                yield '{';
+                yield '';
+                yield '';
+                yield '';
+                yield '    public function getUser(): User';
+                yield '    {';
+                yield '';
+                yield '';
+                yield '        return new User();';
+                yield '    }';
+                yield '';
+                yield '';
+                yield '';
+                yield '}';
+            },
+        );
     }
 
     public function testDumpPreventsConsecutiveNewlinesWithGroups() : void
     {
-        $result = $this->generator->dump([
-            'class Test {',
-            '',
-            '',
-            Group::indent([
+        self::assertDump(
+            <<<'PHP'
+                class Test {
+
+                    public function method()
+                    {
+
+                        return true;
+                    }
+
+                }
+                PHP,
+            [
+                'class Test {',
                 '',
                 '',
-                'public function method()',
-                '{',
                 Group::indent([
                     '',
                     '',
-                    'return true;',
+                    'public function method()',
+                    '{',
+                    Group::indent([
+                        '',
+                        '',
+                        'return true;',
+                    ]),
+                    '}',
                 ]),
+                '',
+                '',
                 '}',
-            ]),
-            '',
-            '',
-            '}',
-        ]);
-
-        $expected = <<<'PHP'
-            <?php
-
-            declare(strict_types=1);
-
-            class Test {
-
-                public function method()
-                {
-
-                    return true;
-                }
-
-            }
-
-            PHP;
-
-        self::assertSame($expected, $result);
+            ],
+        );
     }
 
     public function testTrim() : void
     {
-        $result = $this->generator->trim([
-            '',
-            '',
-            'first line',
-            'middle line',
-            'last line',
-            '',
-            '',
-        ]);
-        $expected = <<<'PHP'
-            <?php
-
-            declare(strict_types=1);
-
-            first line
-            middle line
-            last line
-
-            PHP;
-
-        $this->assertGeneratedCode($expected, $result);
+        $this->assertDump(
+            <<<'PHP'
+                first line
+                middle line
+                last line
+                PHP,
+            $this->generator->trim([
+                '',
+                '',
+                'first line',
+                'middle line',
+                'last line',
+                '',
+                '',
+            ]),
+        );
     }
 
     public function testTrimWithOnlyEmptyLines() : void
     {
-        $result = $this->generator->trim(['', '', '']);
-        $expected = <<<'PHP'
-            <?php
-
-            declare(strict_types=1);
-
-            PHP;
-
-        $this->assertGeneratedCode($expected, $result);
+        self::assertSame('', $this->generator->dump($this->generator->trim(['', '', ''])));
     }
 
     public function testTrimWithNoEmptyLines() : void
     {
-        $result = $this->generator->trim(['line1', 'line2', 'line3']);
-        $expected = <<<'PHP'
-            <?php
-
-            declare(strict_types=1);
-
-            line1
-            line2
-            line3
-
-            PHP;
-
-        $this->assertGeneratedCode($expected, $result);
+        $this->assertDump(
+            <<<'PHP'
+                line1
+                line2
+                line3
+                PHP,
+            $this->generator->trim(['line1', 'line2', 'line3']),
+        );
     }
 
     public function testTrimWithEmptyLinesInMiddle() : void
     {
-        $result = $this->generator->trim([
-            '',
-            'first',
-            '',
-            '',
-            'middle',
-            '',
-            'last',
-            '',
-        ]);
-        $expected = <<<'PHP'
-            <?php
+        $this->assertDump(
+            <<<'PHP'
+                first
 
-            declare(strict_types=1);
+                middle
 
-            first
-
-            middle
-
-            last
-
-            PHP;
-
-        $this->assertGeneratedCode($expected, $result);
+                last
+                PHP,
+            $this->generator->trim([
+                '',
+                'first',
+                '',
+                '',
+                'middle',
+                '',
+                'last',
+                '',
+            ]),
+        );
     }
 
     public function testTrimWithGroups() : void
     {
-        $result = $this->generator->trim([
-            '',
-            Group::indent(['content']),
-            'after group',
-            '',
-        ]);
-        $expected = <<<'PHP'
-            <?php
-
-            declare(strict_types=1);
-
-                content
-            after group
-
-            PHP;
-
-        $this->assertGeneratedCode($expected, $result);
+        $this->assertDump(
+            <<<'PHP'
+                    content
+                after group
+                PHP,
+            $this->generator->trim([
+                '',
+                Group::indent(['content']),
+                'after group',
+                '',
+            ]),
+        );
     }
 
     public function testTrimWithGenerator() : void
     {
-        $data = function () {
-            yield '';
-            yield '';
-            yield 'actual content';
-            yield '';
-        };
-
-        $result = $this->generator->trim($data);
-        $expected = <<<'PHP'
-            <?php
-
-            declare(strict_types=1);
-
-            actual content
-
-            PHP;
-
-        $this->assertGeneratedCode($expected, $result);
+        $this->assertDump(
+            <<<'PHP'
+                actual content
+                PHP,
+            $this->generator->trim(function () {
+                yield '';
+                yield '';
+                yield 'actual content';
+                yield '';
+            }),
+        );
     }
 
     public function testTrimWithIndentedEmptyLines() : void
     {
-        $result = $this->generator->trim([
-            '    ',
-            "\t",
-            'content',
-            '  ',
-        ]);
-        $expected = <<<'PHP'
-            <?php
-
-            declare(strict_types=1);
-
-            content
-
-            PHP;
-
-        $this->assertGeneratedCode($expected, $result);
+        $this->assertDump(
+            <<<'PHP'
+                content
+                PHP,
+            $this->generator->trim([
+                '    ',
+                "\t",
+                'content',
+                '  ',
+            ]),
+        );
     }
 
     public function testIndentWithTrimEnabled() : void
     {
-        $result = $this->generator->indent([
-            '',
-            '',
-            'public function test()',
-            '{',
-            '    return true;',
-            '}',
-            '',
-            '',
-        ]);
-
-        $expected = <<<'PHP'
-            <?php
-
-            declare(strict_types=1);
-
-            class Example
-            {
-                public function test()
+        $this->assertDump(
+            <<<'PHP'
+                class Example
                 {
-                    return true;
+                    public function test()
+                    {
+                        return true;
+                    }
                 }
-            }
-
-            PHP;
-
-        $this->assertGeneratedCode($expected, [
-            'class Example',
-            '{',
-            $result,
-            '}',
-        ]);
+                PHP,
+            [
+                'class Example',
+                '{',
+                $this->generator->indent([
+                    '',
+                    '',
+                    'public function test()',
+                    '{',
+                    '    return true;',
+                    '}',
+                    '',
+                    '',
+                ]),
+                '}',
+            ],
+        );
     }
 
     public function testIndentWithTrimDisabled() : void
     {
-        $result = $this->generator->indent([
-            '',
-            'public function test()',
-            '{',
-            '    return true;',
-            '}',
-            '',
-        ], false);
-
-        $expected = <<<'PHP'
-            <?php
-
-            declare(strict_types=1);
-
-            class Example
-            {
-
-                public function test()
+        $this->assertDump(
+            <<<'PHP'
+                class Example
                 {
-                    return true;
+
+                    public function test()
+                    {
+                        return true;
+                    }
+
                 }
-
-            }
-
-            PHP;
-
-        $this->assertGeneratedCode($expected, [
-            'class Example',
-            '{',
-            $result,
-            '}',
-        ]);
+                PHP,
+            [
+                'class Example',
+                '{',
+                $this->generator->indent([
+                    '',
+                    'public function test()',
+                    '{',
+                    '    return true;',
+                    '}',
+                    '',
+                ], false),
+                '}',
+            ],
+        );
     }
 
     public function testIndentWithCustomIndentionLevel() : void
     {
-        $result = $this->generator->indent([
-            'if (true) {',
-            '    return "nested";',
-            '}',
-        ], true, 2);
-
-        $expected = <<<'PHP'
-            <?php
-
-            declare(strict_types=1);
-
-            function test()
-            {
-                    if (true) {
-                        return "nested";
-                    }
-            }
-
-            PHP;
-
-        $this->assertGeneratedCode($expected, [
-            'function test()',
-            '{',
-            $result,
-            '}',
-        ]);
+        $this->assertDump(
+            <<<'PHP'
+                function test()
+                {
+                        if (true) {
+                            return "nested";
+                        }
+                }
+                PHP,
+            [
+                'function test()',
+                '{',
+                $this->generator->indent([
+                    'if (true) {',
+                    '    return "nested";',
+                    '}',
+                ], true, 2),
+                '}',
+            ],
+        );
     }
 
     public function testIndentWithGenerator() : void
     {
-        $data = function () {
-            yield '';
-            yield 'private string $name;';
-            yield '';
-            yield 'private int $age;';
-            yield '';
-        };
+        $this->assertDump(
+            <<<'PHP'
+                class Person
+                {
+                    private string $name;
 
-        $result = $this->generator->indent($data);
-
-        $expected = <<<'PHP'
-            <?php
-
-            declare(strict_types=1);
-
-            class Person
-            {
-                private string $name;
-
-                private int $age;
-            }
-
-            PHP;
-
-        $this->assertGeneratedCode($expected, [
-            'class Person',
-            '{',
-            $result,
-            '}',
-        ]);
+                    private int $age;
+                }
+                PHP,
+            [
+                'class Person',
+                '{',
+                $this->generator->indent(function () {
+                    yield '';
+                    yield 'private string $name;';
+                    yield '';
+                    yield 'private int $age;';
+                    yield '';
+                }),
+                '}',
+            ],
+        );
     }
 
     public function testIndentPreservesNestedGroups() : void
     {
-        $result = $this->generator->indent([
-            '',
-            'public function nested()',
-            '{',
-            Group::indent([
-                'if ($condition) {',
-                Group::indent(['return true;']),
-                '}',
-            ]),
-            '}',
-            '',
-        ]);
-
-        $expected = <<<'PHP'
-            <?php
-
-            declare(strict_types=1);
-
-            class Test
-            {
-                public function nested()
+        $this->assertDump(
+            <<<'PHP'
+                class Test
                 {
-                    if ($condition) {
-                        return true;
+                    public function nested()
+                    {
+                        if ($condition) {
+                            return true;
+                        }
                     }
                 }
-            }
-
-            PHP;
-
-        $this->assertGeneratedCode($expected, [
-            'class Test',
-            '{',
-            $result,
-            '}',
-        ]);
+                PHP,
+            [
+                'class Test',
+                '{',
+                $this->generator->indent([
+                    '',
+                    'public function nested()',
+                    '{',
+                    Group::indent([
+                        'if ($condition) {',
+                        Group::indent(['return true;']),
+                        '}',
+                    ]),
+                    '}',
+                    '',
+                ]),
+                '}',
+            ],
+        );
     }
 
     public function testPrefixWithSimpleArray() : void
     {
-        $result = $this->generator->prefix('// ', ['line1', 'line2', 'line3']);
-        $expected = <<<'PHP'
-            <?php
-
-            declare(strict_types=1);
-
-            // line1
-            // line2
-            // line3
-
-            PHP;
-
-        $this->assertGeneratedCode($expected, $result);
+        $this->assertDump(
+            <<<'PHP'
+                // line1
+                // line2
+                // line3
+                PHP,
+            $this->generator->prefix('// ', ['line1', 'line2', 'line3']),
+        );
     }
 
     public function testPrefixWithMultilineString() : void
     {
-        $result = $this->generator->prefix('> ', "first line\nsecond line\nthird line");
-        $expected = <<<'PHP'
-            <?php
-
-            declare(strict_types=1);
-
-            > first line
-            > second line
-            > third line
-
-            PHP;
-
-        $this->assertGeneratedCode($expected, $result);
+        $this->assertDump(
+            <<<'PHP'
+                > first line
+                > second line
+                > third line
+                PHP,
+            $this->generator->prefix('> ', "first line\nsecond line\nthird line"),
+        );
     }
 
     public function testPrefixWithGroup() : void
     {
-        $data = function () {
-            yield 'class Example';
-            yield '{';
-            yield Group::indent([
-                'public function test()',
-                '{',
-                Group::indent(['return true;']),
-                '}',
-            ]);
-            yield '}';
-        };
-
-        $prefixed = $this->generator->prefix('// ', $data);
-
-        $expected = <<<'PHP'
-            <?php
-
-            declare(strict_types=1);
-
-            // class Example
-            // {
-                // public function test()
+        $this->assertDump(
+            <<<'PHP'
+                // class Example
                 // {
-                    // return true;
+                    // public function test()
+                    // {
+                        // return true;
+                    // }
                 // }
-            // }
-
-            PHP;
-
-        $this->assertGeneratedCode($expected, $prefixed);
+                PHP,
+            $this->generator->prefix('// ', function () {
+                yield 'class Example';
+                yield '{';
+                yield Group::indent([
+                    'public function test()',
+                    '{',
+                    Group::indent(['return true;']),
+                    '}',
+                ]);
+                yield '}';
+            }),
+        );
     }
 
     public function testCommentWithSimpleArray() : void
     {
-        $result = $this->generator->comment(['line1', 'line2', 'line3']);
-        $expected = <<<'PHP'
-            <?php
-
-            declare(strict_types=1);
-
-            // line1
-            // line2
-            // line3
-
-            PHP;
-
-        $this->assertGeneratedCode($expected, $result);
+        $this->assertDump(
+            <<<'PHP'
+                // line1
+                // line2
+                // line3
+                PHP,
+            $this->generator->comment(['line1', 'line2', 'line3']),
+        );
     }
 
     public function testCommentWithMultilineString() : void
     {
-        $result = $this->generator->comment("first line\nsecond line");
-        $expected = <<<'PHP'
-            <?php
-
-            declare(strict_types=1);
-
-            // first line
-            // second line
-
-            PHP;
-
-        $this->assertGeneratedCode($expected, $result);
+        $this->assertDump(
+            <<<'PHP'
+                // first line
+                // second line
+                PHP,
+            $this->generator->comment("first line\nsecond line"),
+        );
     }
 
     public function testBlockComment() : void
     {
-        $data = [
-            'This is a block comment',
-            'with multiple lines',
-            'of text',
-        ];
-
-        $result = $this->generator->blockComment($data);
-        $expected = <<<'PHP'
-            <?php
-
-            declare(strict_types=1);
-
-            /*
-             * This is a block comment
-             * with multiple lines
-             * of text
-             */
-
-            PHP;
-
-        $this->assertGeneratedCode($expected, $result);
+        $this->assertDump(
+            <<<'PHP'
+                /*
+                 * This is a block comment
+                 * with multiple lines
+                 * of text
+                 */
+                PHP,
+            $this->generator->blockComment([
+                'This is a block comment',
+                'with multiple lines',
+                'of text',
+            ]),
+        );
     }
 
     public function testBlockCommentWithMultilineString() : void
     {
-        $result = $this->generator->blockComment("Line 1\nLine 2\nLine 3");
-        $expected = <<<'PHP'
-            <?php
-
-            declare(strict_types=1);
-
-            /*
-             * Line 1
-             * Line 2
-             * Line 3
-             */
-
-            PHP;
-
-        $this->assertGeneratedCode($expected, $result);
+        $this->assertDump(
+            <<<'PHP'
+                /*
+                 * Line 1
+                 * Line 2
+                 * Line 3
+                 */
+                PHP,
+            $this->generator->blockComment("Line 1\nLine 2\nLine 3"),
+        );
     }
 
     public function testDocComment() : void
     {
-        $data = [
-            'This is a PHPDoc comment',
-            '@param string $name The name parameter',
-            '@return void',
-        ];
-
-        $result = $this->generator->docComment($data);
-        $expected = <<<'PHP'
-            <?php
-
-            declare(strict_types=1);
-
-            /**
-             * This is a PHPDoc comment
-             * @param string $name The name parameter
-             * @return void
-             */
-
-            PHP;
-
-        $this->assertGeneratedCode($expected, $result);
+        $this->assertDump(
+            <<<'PHP'
+                /**
+                 * This is a PHPDoc comment
+                 * @param string $name The name parameter
+                 * @return void
+                 */
+                PHP,
+            $this->generator->docComment([
+                'This is a PHPDoc comment',
+                '@param string $name The name parameter',
+                '@return void',
+            ]),
+        );
     }
 
     public function testDocCommentWithFullDump() : void
     {
-        $expected = <<<'PHP'
-            <?php
-
-            declare(strict_types=1);
-
-            /**
-             * Calculate the sum of two numbers
-             * 
-             * @param int $a First number
-             * @param int $b Second number
-             * @return int The sum
-             */
-            function add(int $a, int $b): int
-            {
-                return $a + $b;
-            }
-
-            PHP;
-
-        $this->assertGeneratedCode($expected, [
-            $this->generator->docComment([
-                'Calculate the sum of two numbers',
-                '',
-                '@param int $a First number',
-                '@param int $b Second number',
-                '@return int The sum',
-            ]),
-            'function add(int $a, int $b): int',
-            '{',
-            Group::indent(['return $a + $b;']),
-            '}',
-        ]);
+        $this->assertDump(
+            <<<'PHP'
+                /**
+                 * Calculate the sum of two numbers
+                 * 
+                 * @param int $a First number
+                 * @param int $b Second number
+                 * @return int The sum
+                 */
+                function add(int $a, int $b): int
+                {
+                    return $a + $b;
+                }
+                PHP,
+            [
+                $this->generator->docComment([
+                    'Calculate the sum of two numbers',
+                    '',
+                    '@param int $a First number',
+                    '@param int $b Second number',
+                    '@return int The sum',
+                ]),
+                'function add(int $a, int $b): int',
+                '{',
+                Group::indent(['return $a + $b;']),
+                '}',
+            ],
+        );
     }
 
     public function testCommentWithGroup() : void
     {
-        $data = [
-            'class Test',
-            '{',
-            Group::indent([
-                'public function method()',
+        $this->assertDump(
+            <<<'PHP'
+                // class Test
+                // {
+                    // public function method()
+                    // {
+                        // return true;
+                    // }
+                // }
+                PHP,
+            $this->generator->comment([
+                'class Test',
                 '{',
-                Group::indent(['return true;']),
+                Group::indent([
+                    'public function method()',
+                    '{',
+                    Group::indent(['return true;']),
+                    '}',
+                ]),
                 '}',
             ]),
-            '}',
-        ];
-
-        $commented = $this->generator->comment($data);
-        $expected = <<<'PHP'
-            <?php
-
-            declare(strict_types=1);
-
-            // class Test
-            // {
-                // public function method()
-                // {
-                    // return true;
-                // }
-            // }
-
-            PHP;
-
-        $this->assertGeneratedCode($expected, $commented);
+        );
     }
 
     public function testBlockCommentWithGroup() : void
     {
-        $data = [
-            'Example code:',
-            Group::indent([
-                'if ($condition) {',
-                Group::indent(['return true;']),
-                '}',
+        $this->assertDump(
+            <<<'PHP'
+                /*
+                 * Example code:
+                     * if ($condition) {
+                         * return true;
+                     * }
+                 */
+                PHP,
+            $this->generator->blockComment([
+                'Example code:',
+                Group::indent([
+                    'if ($condition) {',
+                    Group::indent(['return true;']),
+                    '}',
+                ]),
             ]),
-        ];
-
-        $result = $this->generator->blockComment($data);
-        $expected = <<<'PHP'
-            <?php
-
-            declare(strict_types=1);
-
-            /*
-             * Example code:
-                 * if ($condition) {
-                     * return true;
-                 * }
-             */
-
-            PHP;
-
-        $this->assertGeneratedCode($expected, $result);
+        );
     }
 
     public function testBlockCommentWithEmptyContent() : void
     {
-        $result = $this->generator->blockComment([]);
-        $expected = <<<'PHP'
-            <?php
-
-            declare(strict_types=1);
-
-            PHP;
-
-        $this->assertGeneratedCode($expected, $result);
+        $this->assertDump('', $this->generator->blockComment([]));
     }
 
     public function testDocCommentWithEmptyContent() : void
     {
-        $result = $this->generator->docComment([]);
-        $expected = <<<'PHP'
-            <?php
-
-            declare(strict_types=1);
-
-            PHP;
-
-        $this->assertGeneratedCode($expected, $result);
+        $this->assertDump('', $this->generator->docComment([]));
     }
 
     public function testCommentWithEmptyContent() : void
     {
-        $result = $this->generator->comment([]);
-        $expected = <<<'PHP'
-            <?php
-
-            declare(strict_types=1);
-
-            PHP;
-
-        $this->assertGeneratedCode($expected, $result);
+        $this->assertDump('', $this->generator->comment([]));
     }
 
     public function testBlockCommentWithEmptyString() : void
     {
-        $result = $this->generator->blockComment('');
-        $expected = <<<'PHP'
-            <?php
-
-            declare(strict_types=1);
-
-            /*
-             * 
-             */
-
-            PHP;
-
-        $this->assertGeneratedCode($expected, $result);
+        $this->assertDump(
+            <<<'PHP'
+                /*
+                 * 
+                 */
+                PHP,
+            $this->generator->blockComment(''),
+        );
     }
 
     public function testDocCommentWithEmptyGenerator() : void
     {
-        $result = $this->generator->docComment([]);
-        $expected = <<<'PHP'
-            <?php
-
-            declare(strict_types=1);
-
-            PHP;
-
-        $this->assertGeneratedCode($expected, $result);
+        $this->assertDump('', $this->generator->docComment([]));
     }
 }

@@ -1,9 +1,12 @@
 {
     "name": "ruudk/code-generator",
     "description": "Yield your code line by line: let generators handle indentation, formatting, and structure for you",
-    "keywords": ["dev", "code generator"],
     "license": "MIT",
     "type": "library",
+    "keywords": [
+        "dev",
+        "code generator"
+    ],
     "authors": [
         {
             "name": "Ruud Kamphuis",

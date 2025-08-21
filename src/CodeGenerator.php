@@ -24,36 +24,48 @@ final class CodeGenerator
     ) {}
 
     /**
-     * Dumps the generated code with proper formatting, namespace, and imports
+     * Dumps the generated code with proper formatting (removes consecutive newlines, trims)
      * @param CodeLines $iterable
      */
     public function dump(array | Closure | Generator | string $iterable) : string
     {
-        $resolvedContent = self::resolveIterable($iterable);
-
         $output = implode(
             PHP_EOL,
-            self::resolveIterable($this->maybeIndent(function () use ($resolvedContent) {
-                yield '<?php';
-                yield '';
-                yield 'declare(strict_types=1);';
-                yield '';
-
-                if ($this->namespace !== null) {
-                    yield sprintf('namespace %s;', $this->namespace);
-                    yield '';
-                }
-
-                yield from $this->maybeDump([], $this->dumpImports(), ['']);
-
-                yield from $resolvedContent;
-            })),
+            self::resolveIterable($this->maybeIndent($iterable)),
         );
 
         // Replace consecutive newlines with a single newline
         $output = preg_replace('/(\r?\n){3,}/', PHP_EOL . PHP_EOL, $output) ?? '';
 
-        return rtrim(ltrim($output, ' '), PHP_EOL) . PHP_EOL;
+        return rtrim($output);
+    }
+
+    /**
+     * Dumps a complete PHP file with opening tag, declare, namespace, and imports
+     * @param CodeLines $iterable
+     */
+    public function dumpFile(array | Closure | Generator | string $iterable) : string
+    {
+        $content = $this->dump(function () use ($iterable) {
+            yield '<?php';
+            yield '';
+            yield 'declare(strict_types=1);';
+            yield '';
+
+            if ($this->namespace !== null) {
+                yield sprintf('namespace %s;', $this->namespace);
+                yield '';
+            }
+
+            $content = self::resolveIterable($iterable);
+
+            yield from $this->maybeDump([], $this->dumpImports(), ['']);
+
+            yield from $content;
+        });
+
+        // Ensure file ends with a newline
+        return $content === '' ? '' : $content . PHP_EOL;
     }
 
     /**
@@ -593,7 +605,13 @@ final class CodeGenerator
     {
         $args = self::resolveIterable($args);
 
-        if (count($args) <= 1) {
+        if (count($args) === 0) {
+            yield sprintf('%s()', $function);
+
+            return;
+        }
+
+        if (count($args) === 1) {
             yield from $this->prefixFirst(
                 sprintf('%s(', $function),
                 $this->suffixLast(
