@@ -24,6 +24,7 @@
         "phpstan/phpstan": "^2.1",
         "phpunit/phpunit": "^12.3",
         "ruudk/readme-examples-sync-hook": "^1.0",
+        "shipmonk/composer-dependency-analyser": "^1.8",
         "ticketswap/php-cs-fixer-config": "^1.0",
         "ticketswap/phpstan-error-formatter": "^1.1"
     },
