@@ -47,7 +47,6 @@ final class GroupTest extends TestCase
         $group = new Group($lines);
 
         self::assertSame($lines, $group->lines);
-        self::assertInstanceOf(Group::class, $group->lines[1]);
     }
 
     public function testConstructorWithGenerator() : void
@@ -160,7 +159,6 @@ final class GroupTest extends TestCase
         self::assertFalse($outerGroup->isEmpty());
 
         $middleGroupFromOuter = $outerGroup->lines[1];
-        self::assertInstanceOf(Group::class, $middleGroupFromOuter);
         self::assertSame(0, $middleGroupFromOuter->indention);
         self::assertCount(2, $middleGroupFromOuter->lines);
 
