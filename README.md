@@ -189,7 +189,7 @@ echo $generator->dumpFile(function () use ($generator) {
         'final class DemoClass extends %s implements %s, %s',
         $generator->import('Example\BaseClass'),
         $generator->import('Example\Interfaces\FirstInterface'),
-        $generator->import('Example\Interfaces\SecondInterface', byParent: true),
+        $generator->import('Example\Interfaces\SecondInterface'),
     );
     yield '{';
     yield $generator->indent(function () use ($generator) {
@@ -484,9 +484,9 @@ use Doctrine\Common\Collections\Collection;
 use Example\Attributes\Entity;
 use Example\Attributes\Table;
 use Example\BaseClass;
-use Example\Interfaces;
 use Example\Interfaces\BaseInterface;
 use Example\Interfaces\FirstInterface;
+use Example\Interfaces\SecondInterface;
 use Example\SomeClass;
 use Logger;
 use self;
@@ -497,7 +497,7 @@ use stdClass;
 
 #[Entity]
 #[Table]
-final class DemoClass extends BaseClass implements FirstInterface, Interfaces\SecondInterface
+final class DemoClass extends BaseClass implements FirstInterface, SecondInterface
 {
     // Class properties
     private DateTimeImmutable $date;

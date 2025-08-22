@@ -15,13 +15,16 @@ use UnitEnum;
 final class CodeGenerator
 {
     /**
-     * @var array<string, string>
+     * @var array<string, Alias|FullyQualified|FunctionName|NamespaceName>
      */
     private array $imports = [];
+    private readonly ?NamespaceName $namespace;
 
     public function __construct(
-        private readonly ?string $namespace = null,
-    ) {}
+        null | NamespaceName | string $namespace = null,
+    ) {
+        $this->namespace = NamespaceName::maybeFromString($namespace);
+    }
 
     /**
      * Dumps the generated code with proper formatting (removes consecutive newlines, trims)
@@ -74,30 +77,46 @@ final class CodeGenerator
      */
     private function dumpImports() : Generator
     {
-        uasort(
-            $this->imports,
-            fn($left, $right) => strcasecmp(
-                str_replace('\\', ' ', str_starts_with($left, 'function ') ? substr($left, 9) : $left),
-                str_replace('\\', ' ', str_starts_with($right, 'function ') ? substr($right, 9) : $right),
-            ),
-        );
+        uasort($this->imports, fn($left, $right) => $left->compare($right));
 
         foreach ($this->imports as $alias => $import) {
-            if ( ! str_starts_with($import, 'function ')) {
-                [$namespace, $class] = $this->splitFqcn($import);
+            if ($import instanceof Alias) {
+                yield $import->toUseStatement();
 
-                if ($namespace === $this->namespace) {
-                    continue;
-                }
-
-                if ($alias !== $class) {
-                    yield sprintf('use %s as %s;', $import, $alias);
-
-                    continue;
-                }
+                continue;
             }
 
-            yield sprintf('use %s;', $import);
+            if ($import instanceof FunctionName) {
+                // Handle function imports
+                yield sprintf('use %s;', $import);
+
+                continue;
+            }
+
+            if ($import instanceof NamespaceName) {
+                // Parent namespace import - check if we need an alias
+                $lastPart = $import->lastPart;
+
+                if ($alias !== $lastPart) {
+                    yield sprintf('use %s as %s;', $import, $alias);
+                } else {
+                    yield sprintf('use %s;', $import);
+                }
+
+                continue;
+            }
+
+            // Skip if it's in the same namespace as the file
+            if ($import->namespace !== null && $this->namespace !== null && $import->namespace->equals($this->namespace)) {
+                continue;
+            }
+
+            // Check if we need an alias
+            if ($alias !== $import->className->name) {
+                yield sprintf('use %s as %s;', $import, $alias);
+            } else {
+                yield sprintf('use %s;', $import);
+            }
         }
     }
 
@@ -138,26 +157,20 @@ final class CodeGenerator
     }
 
     /**
-     * Splits a fully qualified class name into namespace and class name parts
-     * @return array{string, string}
-     */
-    public function splitFqcn(string $fqcn) : array
-    {
-        $parts = explode('\\', $fqcn);
-        $className = array_pop($parts);
-        $namespace = implode('\\', $parts);
-
-        return [$namespace, $className];
-    }
-
-    /**
      * Finds an available alias for a type, appending numbers if the alias is already taken
      */
-    private function findAvailableAlias(string $type, string $alias, int $i = 1) : string
+    private function findAvailableAlias(Alias | FullyQualified | FunctionName | NamespaceName $type, string $alias, int $i = 1) : string
     {
         $aliasToCheck = $i === 1 ? $alias : sprintf('%s%d', $alias, $i);
 
-        if ( ! isset($this->imports[$aliasToCheck]) || $this->imports[$aliasToCheck] === $type) {
+        if ( ! isset($this->imports[$aliasToCheck])) {
+            return $aliasToCheck;
+        }
+
+        $existing = $this->imports[$aliasToCheck];
+
+        // Check if it's the same import
+        if ($existing->equals($type)) {
             return $aliasToCheck;
         }
 
@@ -167,50 +180,34 @@ final class CodeGenerator
     /**
      * Imports a class, function, or enum and returns the alias to use in the generated code
      */
-    public function import(string | UnitEnum $fqcnOrEnum, bool $byParent = false) : string
+    public function import(FullyQualified | FunctionName | string | UnitEnum $fqcnOrEnum) : string
     {
-        if (is_string($fqcnOrEnum) && str_starts_with($fqcnOrEnum, 'function ')) {
-            $this->imports[$fqcnOrEnum] = $fqcnOrEnum;
+        if ($fqcnOrEnum instanceof FunctionName) {
+            $alias = $this->findAvailableAlias($fqcnOrEnum, $fqcnOrEnum->shortName);
+            $this->imports[$alias] = $fqcnOrEnum;
 
-            $parts = explode('\\', $fqcnOrEnum);
-
-            return array_pop($parts);
+            return $alias;
         }
 
         if ($fqcnOrEnum instanceof UnitEnum) {
-            $type = $fqcnOrEnum::class;
-        } else {
-            $type = $fqcnOrEnum;
+            $fqcn = new FullyQualified($fqcnOrEnum::class);
+            $alias = $this->findAvailableAlias($fqcn, $fqcn->className->name);
+            $this->imports[$alias] = $fqcn;
+
+            return sprintf('%s::%s', $alias, $fqcnOrEnum->name);
         }
 
-        [$namespace, $alias] = $this->splitFqcn($type);
+        $fqcn = FullyQualified::maybeFromString($fqcnOrEnum);
+        $alias = $this->findAvailableAlias($fqcn, $fqcn->className->name);
+        $this->imports[$alias] = $fqcn;
 
-        if ($byParent) {
-            [, $parent] = $this->splitFqcn($namespace);
-
-            $parent = $this->findAvailableAlias($namespace, $parent);
-
-            $this->imports[$parent] = $namespace;
-
-            $reference = sprintf('%s\\%s', $parent, $alias);
-        } else {
-            $alias = $this->findAvailableAlias($type, $alias);
-
-            $this->imports[$alias] = $type;
-            $reference = $alias;
-        }
-
-        if ($fqcnOrEnum instanceof UnitEnum) {
-            return sprintf('%s::%s', $reference, $fqcnOrEnum->name);
-        }
-
-        return $reference;
+        return $alias;
     }
 
     /**
      * Generates a PHP attribute string for the given fully qualified class name
      */
-    public function dumpAttribute(string $fqcn) : string
+    public function dumpAttribute(FullyQualified | string $fqcn) : string
     {
         return sprintf('#[%s]', $this->import($fqcn));
     }
@@ -218,9 +215,9 @@ final class CodeGenerator
     /**
      * Generates a class reference string (e.g., Foo::class)
      */
-    public function dumpClassReference(string $fqcn, bool $import = true, bool $byParent = false) : string
+    public function dumpClassReference(FullyQualified | string $fqcn, bool $import = true) : string
     {
-        return sprintf('%s::class', $import ? $this->import($fqcn, $byParent) : '\\' . $fqcn);
+        return sprintf('%s::class', $import ? $this->import($fqcn) : '\\' . (string) $fqcn);
     }
 
     /**

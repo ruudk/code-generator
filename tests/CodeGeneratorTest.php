@@ -172,9 +172,9 @@ final class CodeGeneratorTest extends TestCase
 
     public function testImportFunction() : void
     {
-        $alias = $this->generator->import('function array_map');
+        $alias = $this->generator->import(new FunctionName('array_map'));
 
-        self::assertSame('function array_map', $alias);
+        self::assertSame('array_map', $alias);
 
         $this->assertDumpFile(
             <<<'PHP'
@@ -208,25 +208,6 @@ final class CodeGeneratorTest extends TestCase
         );
     }
 
-    public function testImportByParent() : void
-    {
-        $reference = $this->generator->import('App\\Models\\User', true);
-
-        self::assertSame('Models\\User', $reference);
-
-        $this->assertDumpFile(
-            <<<'PHP'
-                <?php
-
-                declare(strict_types=1);
-
-                use App\Models;
-
-                PHP,
-            [],
-        );
-    }
-
     public function testImportSameNamespace() : void
     {
         $this->generator = new CodeGenerator('App\\Models');
@@ -244,22 +225,6 @@ final class CodeGeneratorTest extends TestCase
                 PHP,
             [],
         );
-    }
-
-    public function testSplitFqcn() : void
-    {
-        [$namespace, $class] = $this->generator->splitFqcn('App\\Models\\User');
-
-        self::assertSame('App\\Models', $namespace);
-        self::assertSame('User', $class);
-    }
-
-    public function testSplitFqcnWithoutNamespace() : void
-    {
-        [$namespace, $class] = $this->generator->splitFqcn('SimpleClass');
-
-        self::assertSame('', $namespace);
-        self::assertSame('SimpleClass', $class);
     }
 
     public function testDumpAttribute() : void
@@ -283,14 +248,6 @@ final class CodeGeneratorTest extends TestCase
         self::assertSame(
             '\\App\\Models\\User::class',
             $this->generator->dumpClassReference('App\\Models\\User', false),
-        );
-    }
-
-    public function testDumpClassReferenceByParent() : void
-    {
-        self::assertSame(
-            'Models\\User::class',
-            $this->generator->dumpClassReference('App\\Models\\User', true, true),
         );
     }
 
@@ -742,7 +699,7 @@ final class CodeGeneratorTest extends TestCase
     {
         $this->generator->import('Zebra\\Class');
         $this->generator->import('App\\Models\\User');
-        $this->generator->import('function array_map');
+        $this->generator->import(new FunctionName('array_map'));
         $this->generator->import('App\\Models\\Post');
         $this->generator->import('Beta\\Class');
 
@@ -756,6 +713,34 @@ final class CodeGeneratorTest extends TestCase
             use function array_map;
             use Beta\Class as Class2;
             use Zebra\Class;
+
+            PHP;
+
+        $this->assertDumpFile($expected, []);
+    }
+
+    public function testImportSortingWithSymfonyFunctions() : void
+    {
+        // Add imports in random order to test sorting
+        $this->generator->import(new FunctionName('Symfony\\Component\\DependencyInjection\\Loader\\Configurator\\service'));
+        $this->generator->import('Symfony\\Component\\Serializer\\Mapping\\Loader\\LoaderInterface');
+        $this->generator->import('Symfony\\Component\\DependencyInjection\\ContainerBuilder');
+        $this->generator->import(new FunctionName('Symfony\\Component\\DependencyInjection\\Loader\\Configurator\\param'));
+        $this->generator->import('Symfony\\Component\\DependencyInjection\\Loader\\Configurator\\ContainerConfigurator');
+        $this->generator->import(new FunctionName('Symfony\\Component\\DependencyInjection\\Loader\\Configurator\\inline_service'));
+
+        // This should match your exact expected output
+        $expected = <<<'PHP'
+            <?php
+
+            declare(strict_types=1);
+
+            use Symfony\Component\DependencyInjection\ContainerBuilder;
+            use Symfony\Component\DependencyInjection\Loader\Configurator\ContainerConfigurator;
+            use function Symfony\Component\DependencyInjection\Loader\Configurator\inline_service;
+            use function Symfony\Component\DependencyInjection\Loader\Configurator\param;
+            use function Symfony\Component\DependencyInjection\Loader\Configurator\service;
+            use Symfony\Component\Serializer\Mapping\Loader\LoaderInterface;
 
             PHP;
 

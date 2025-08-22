@@ -23,7 +23,7 @@ echo $generator->dumpFile(function () use ($generator) {
         'final class DemoClass extends %s implements %s, %s',
         $generator->import('Example\BaseClass'),
         $generator->import('Example\Interfaces\FirstInterface'),
-        $generator->import('Example\Interfaces\SecondInterface', byParent: true),
+        $generator->import('Example\Interfaces\SecondInterface'),
     );
     yield '{';
     yield $generator->indent(function () use ($generator) {
