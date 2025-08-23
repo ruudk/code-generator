@@ -363,11 +363,23 @@ final class CodeGeneratorTest extends TestCase
         );
     }
 
+    public function testDumpClassReferenceByParent() : void
+    {
+        self::assertSame(
+            'Models\\User::class',
+            $this->generator->dumpClassReference('App\\Models\\User', byParent: true),
+        );
+    }
+
     public function testDumpClassReferenceWithoutImport() : void
     {
         self::assertSame(
             '\\App\\Models\\User::class',
             $this->generator->dumpClassReference('App\\Models\\User', false),
+        );
+        self::assertSame(
+            '\\App\\Models\\User::class',
+            $this->generator->dumpClassReference('\\App\\Models\\User', false),
         );
     }
 

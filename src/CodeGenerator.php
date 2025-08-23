@@ -246,9 +246,18 @@ final class CodeGenerator
     /**
      * Generates a class reference string (e.g., Foo::class)
      */
-    public function dumpClassReference(FullyQualified | string $fqcn, bool $import = true) : string
+    public function dumpClassReference(FullyQualified | string $fqcn, bool $import = true, bool $byParent = false) : string
     {
-        return sprintf('%s::class', $import ? $this->import($fqcn) : '\\' . (string) $fqcn);
+        $fqcn = FullyQualified::maybeFromString($fqcn);
+
+        return sprintf(
+            '%s::class',
+            match (true) {
+                $import && $byParent => $this->importByParent($fqcn),
+                $import => $this->import($fqcn),
+                default => '\\' . $fqcn,
+            },
+        );
     }
 
     /**
