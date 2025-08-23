@@ -18,7 +18,7 @@ final class ImportableTest extends TestCase
 
         // Test that all classes have the required interface methods and can be converted to strings
         $importables = [$className, $fullyQualified, $functionName, $namespaceName, $alias];
-        
+
         foreach ($importables as $importable) {
             // Test basic Importable interface functionality
             self::assertTrue($importable->equals($importable));
