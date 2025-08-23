@@ -205,42 +205,43 @@ final class CodeGenerator
     }
 
     /**
-     * Imports a class by specifying its parent namespace and class name separately
+     * Imports a class by importing its parent namespace and returning the class name
      */
-    public function importByParent(NamespaceName | string $parentNamespace, string $className) : string
+    public function importByParent(FullyQualified | string $name) : string
     {
-        $namespace = $parentNamespace instanceof NamespaceName 
-            ? $parentNamespace 
-            : new NamespaceName($parentNamespace);
+        $fqcn = FullyQualified::maybeFromString($name);
         
-        // Check if the full target namespace is the same as the current namespace
-        if ($this->namespace !== null && $namespace->equals($this->namespace)) {
-            return $className;
+        // If there's no namespace, just return the class name
+        if ($fqcn->namespace === null) {
+            return (string) $fqcn->className;
         }
         
-        // Split the namespace into parent and child parts
-        $parts = explode('\\', $namespace->namespace);
+        // Check if the full target namespace is the same as the current namespace
+        if ($this->namespace !== null && $fqcn->namespace->equals($this->namespace)) {
+            return (string) $fqcn->className;
+        }
+        
+        // Split the namespace into parts
+        $parts = explode('\\', $fqcn->namespace->namespace);
         
         if (count($parts) === 1) {
             // If there's only one part, import the full class
-            $fqcn = new FullyQualified($namespace->namespace, $className);
             return $this->import($fqcn);
         }
         
-        // Get the parent part (first segment) and child parts (remaining segments)
-        $parentPart = array_shift($parts);
-        $childParts = $parts;
+        // Remove the last part (keep all but the last part as parent)
+        array_pop($parts);
+        $parentNamespace = implode('\\', $parts);
         
-        // Create parent namespace (just the first part)
-        $parentNamespaceObj = new NamespaceName($parentPart);
+        // Create parent namespace object
+        $parentNamespaceObj = new NamespaceName($parentNamespace);
         
         // Import the parent namespace
         $alias = $this->findAvailableAlias($parentNamespaceObj, $parentNamespaceObj->lastPart);
         $this->imports[$alias] = $parentNamespaceObj;
         
-        // Return the relative reference from the imported parent namespace
-        $childNamespace = implode('\\', $childParts);
-        return $childNamespace . '\\' . $className;
+        // Return just the class name
+        return (string) $fqcn->className;
     }
 
     /**
