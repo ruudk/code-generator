@@ -30,6 +30,14 @@ php --version  # Must show 8.4+
 composer install
 ```
 
+### Important: Composer Dependency Management
+
+**NEVER run `composer update`** unless explicitly requested. This command updates all dependencies to their latest versions and modifies `composer.lock`, which should only be done intentionally by the project maintainer.
+
+- **Use `composer install`** for normal dependency installation - this respects the locked versions
+- **Composer modifications** (adding/removing packages) should only be done when explicitly requested
+- **Never commit `composer.lock` changes** unless explicitly asked to update dependencies
+
 ### Complete Validation Sequence (CI Pipeline Order)
 
 The following commands MUST be run in this exact order. Each command must pass before proceeding:
