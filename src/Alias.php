@@ -6,16 +6,15 @@ namespace Ruudk\CodeGenerator;
 
 use InvalidArgumentException;
 use Override;
-use Stringable;
 
-final readonly class Alias implements Stringable
+final readonly class Alias implements Importable
 {
     public string $alias;
-    public FullyQualified | FunctionName | NamespaceName $target;
+    public Importable $target;
 
     public function __construct(
         string $alias,
-        FullyQualified | FunctionName | NamespaceName $target,
+        Importable $target,
     ) {
         $alias = trim($alias);
 
@@ -37,6 +36,7 @@ final readonly class Alias implements Stringable
         return sprintf('%s as %s', $this->target, $this->alias);
     }
 
+    #[Override]
     public function equals(object $other) : bool
     {
         return $other instanceof self
@@ -44,6 +44,7 @@ final readonly class Alias implements Stringable
             && $this->target->equals($other->target);
     }
 
+    #[Override]
     public function compare(object $other) : int
     {
         // Aliases should sort by their target, not their alias name

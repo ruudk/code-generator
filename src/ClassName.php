@@ -6,9 +6,8 @@ namespace Ruudk\CodeGenerator;
 
 use InvalidArgumentException;
 use Override;
-use Stringable;
 
-final readonly class ClassName implements Stringable
+final readonly class ClassName implements Importable
 {
     /**
      * @var non-empty-string
@@ -34,7 +33,7 @@ final readonly class ClassName implements Stringable
     /**
      * @phpstan-return ($input is null ? null : self)
      */
-    public static function maybeFromString(null | self | string $input) : ?self
+    public static function maybeFromString(null | Importable | self | string $input) : ?self
     {
         if ($input === null) {
             return null;
@@ -44,7 +43,7 @@ final readonly class ClassName implements Stringable
             return $input;
         }
 
-        return new self($input);
+        return new self((string) $input);
     }
 
     #[Override]
@@ -53,11 +52,13 @@ final readonly class ClassName implements Stringable
         return $this->name;
     }
 
+    #[Override]
     public function equals(object $other) : bool
     {
         return $other instanceof self && $this->name === $other->name;
     }
 
+    #[Override]
     public function compare(object $other) : int
     {
         if ($other instanceof self) {

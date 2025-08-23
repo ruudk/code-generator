@@ -6,19 +6,24 @@ namespace Ruudk\CodeGenerator;
 
 use InvalidArgumentException;
 use Override;
-use Stringable;
 
-final readonly class FullyQualified implements Stringable
+final readonly class FullyQualified implements Importable
 {
     public ClassName $className;
     public ?NamespaceName $namespace;
 
     public function __construct(
-        string $part,
-        string ...$parts,
+        Importable | string $part,
+        Importable | string ...$parts,
     ) {
         $flattened = array_filter(
-            explode('\\', implode('\\', [$part, ...$parts])),
+            explode(
+                '\\',
+                implode(
+                    '\\',
+                    array_map(strval(...), [$part, ...$parts]),
+                ),
+            ),
             fn($p) => $p !== '',
         );
 
@@ -29,15 +34,13 @@ final readonly class FullyQualified implements Stringable
         $classNamePart = array_pop($flattened);
         $this->className = new ClassName($classNamePart);
 
-        $this->namespace = $flattened !== []
-            ? new NamespaceName(implode('\\', $flattened))
-            : null;
+        $this->namespace = $flattened !== [] ? new NamespaceName(implode('\\', $flattened)) : null;
     }
 
     /**
      * @phpstan-return ($input is null ? null : self)
      */
-    public static function maybeFromString(null | self | string $input) : ?self
+    public static function maybeFromString(null | Importable | self | string $input) : ?self
     {
         if ($input === null) {
             return null;
@@ -47,7 +50,7 @@ final readonly class FullyQualified implements Stringable
             return $input;
         }
 
-        return new self($input);
+        return new self((string) $input);
     }
 
     #[Override]
@@ -60,11 +63,13 @@ final readonly class FullyQualified implements Stringable
         return $this->namespace . '\\' . $this->className;
     }
 
+    #[Override]
     public function equals(object $other) : bool
     {
         return $other instanceof self && (string) $this === (string) $other;
     }
 
+    #[Override]
     public function compare(object $other) : int
     {
         $thisStr = str_replace('\\', ' ', (string) $this);
