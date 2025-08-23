@@ -186,12 +186,19 @@ final class CodeGenerator
     }
 
     /**
-     * Imports a class or function and returns the alias to use in the generated code
+     * Imports a class, namespace, or function and returns the alias to use in the generated code
      */
-    public function import(FullyQualified | FunctionName | string $fqcnOrEnum) : string
+    public function import(FullyQualified | FunctionName | NamespaceName | string $fqcnOrEnum) : string
     {
         if ($fqcnOrEnum instanceof FunctionName) {
             $alias = $this->findAvailableAlias($fqcnOrEnum, $fqcnOrEnum->shortName);
+            $this->imports[$alias] = $fqcnOrEnum;
+
+            return $alias;
+        }
+
+        if ($fqcnOrEnum instanceof NamespaceName) {
+            $alias = $this->findAvailableAlias($fqcnOrEnum, $fqcnOrEnum->lastPart);
             $this->imports[$alias] = $fqcnOrEnum;
 
             return $alias;
@@ -222,8 +229,7 @@ final class CodeGenerator
         }
         
         // Import the namespace and return the alias with class name
-        $namespaceAlias = $this->findAvailableAlias($fqcn->namespace, $fqcn->namespace->lastPart);
-        $this->imports[$namespaceAlias] = $fqcn->namespace;
+        $namespaceAlias = $this->import($fqcn->namespace);
         
         return $namespaceAlias . '\\' . (string) $fqcn->className;
     }
