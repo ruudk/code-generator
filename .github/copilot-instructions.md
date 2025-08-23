@@ -42,35 +42,7 @@ composer install
 
 The following commands MUST be run in this exact order. Each command must pass before proceeding:
 
-1. **Validate Composer Configuration**
-   ```bash
-   composer validate --strict
-   ```
-   - Takes ~2 seconds
-   - Validates composer.json syntax and dependencies
-
-2. **Install Dependencies** 
-   ```bash
-   composer install --prefer-dist --no-progress
-   ```
-   - Takes 30-60 seconds
-   - ALWAYS run after any composer.json changes
-
-3. **Check Composer Normalization**
-   ```bash
-   composer normalize --diff --dry-run
-   ```
-   - Takes ~3 seconds
-   - Ensures composer.json follows standardized format
-
-4. **Analyze Dependencies**
-   ```bash
-   vendor/bin/composer-dependency-analyser
-   ```
-   - Takes ~5 seconds
-   - Detects unused or missing dependencies
-
-5. **Run Code Style Fixer**
+1. **Run Code Style Fixer**
    ```bash
    vendor/bin/php-cs-fixer check --diff
    ```
@@ -78,7 +50,7 @@ The following commands MUST be run in this exact order. Each command must pass b
    - Validates PSR-12 and custom coding standards
    - To fix issues: `vendor/bin/php-cs-fixer fix`
 
-6. **Run Static Analysis**
+2. **Run Static Analysis**
    ```bash
    vendor/bin/phpstan analyse
    ```
@@ -86,26 +58,13 @@ The following commands MUST be run in this exact order. Each command must pass b
    - Runs at level 9 (strictest)
    - Configuration in phpstan.php
 
-7. **Run Unit Tests**
+3. **Run Unit Tests**
    ```bash
    vendor/bin/phpunit
    ```
    - Takes 5-10 seconds
    - Must have 100% pass rate
    - Configuration in phpunit.xml
-
-### Example Validation (Pre-commit Hook)
-```bash
-# Validate example files (run from project root)
-cd examples && for file in *.php; do 
-  echo "Testing examples/$file..."
-  php "$file" > /dev/null 2>&1 || { 
-    echo "✗ Failed: examples/$file"
-    exit 1
-  }
-  echo "✓ Passed: examples/$file"
-done
-```
 
 ### Development Workflow
 
