@@ -15,13 +15,13 @@ use UnitEnum;
 final class CodeGenerator
 {
     /**
-     * @var array<string, Alias|FullyQualified|FunctionName|NamespaceName>
+     * @var array<string, ImportableInterface>
      */
     private array $imports = [];
     private readonly ?NamespaceName $namespace;
 
     public function __construct(
-        null | NamespaceName | string $namespace = null,
+        null | NamespaceName | string | ImportableInterface $namespace = null,
     ) {
         $this->namespace = NamespaceName::maybeFromString($namespace);
     }
@@ -159,7 +159,7 @@ final class CodeGenerator
     /**
      * Finds an available alias for a type, appending numbers if the alias is already taken
      */
-    private function findAvailableAlias(Alias | FullyQualified | FunctionName | NamespaceName $type, string $alias, int $i = 1) : string
+    private function findAvailableAlias(ImportableInterface $type, string $alias, int $i = 1) : string
     {
         $aliasToCheck = $i === 1 ? $alias : sprintf('%s%d', $alias, $i);
 
@@ -188,7 +188,7 @@ final class CodeGenerator
     /**
      * Imports a class, namespace, or function and returns the alias to use in the generated code
      */
-    public function import(FullyQualified | FunctionName | NamespaceName | string $fqcnOrEnum) : string
+    public function import(ImportableInterface | string $fqcnOrEnum) : string
     {
         if ($fqcnOrEnum instanceof FunctionName) {
             $alias = $this->findAvailableAlias($fqcnOrEnum, $fqcnOrEnum->shortName);
@@ -214,7 +214,7 @@ final class CodeGenerator
     /**
      * Imports a class by importing its parent namespace and returning the relative path
      */
-    public function importByParent(FullyQualified | string $name) : string
+    public function importByParent(FullyQualified | string | ImportableInterface $name) : string
     {
         $fqcn = FullyQualified::maybeFromString($name);
 
@@ -238,7 +238,7 @@ final class CodeGenerator
     /**
      * Generates a PHP attribute string for the given fully qualified class name
      */
-    public function dumpAttribute(FullyQualified | string $fqcn) : string
+    public function dumpAttribute(ImportableInterface | string $fqcn) : string
     {
         return sprintf('#[%s]', $this->import($fqcn));
     }
@@ -246,7 +246,7 @@ final class CodeGenerator
     /**
      * Generates a class reference string (e.g., Foo::class)
      */
-    public function dumpClassReference(FullyQualified | string $fqcn, bool $import = true) : string
+    public function dumpClassReference(ImportableInterface | string $fqcn, bool $import = true) : string
     {
         return sprintf('%s::class', $import ? $this->import($fqcn) : '\\' . (string) $fqcn);
     }

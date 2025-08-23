@@ -8,7 +8,7 @@ use InvalidArgumentException;
 use Override;
 use Stringable;
 
-final readonly class ClassName implements Stringable
+final readonly class ClassName implements ImportableInterface
 {
     /**
      * @var non-empty-string
@@ -34,7 +34,7 @@ final readonly class ClassName implements Stringable
     /**
      * @phpstan-return ($input is null ? null : self)
      */
-    public static function maybeFromString(null | self | string $input) : ?self
+    public static function maybeFromString(null | self | string | ImportableInterface $input) : ?self
     {
         if ($input === null) {
             return null;
@@ -44,7 +44,7 @@ final readonly class ClassName implements Stringable
             return $input;
         }
 
-        return new self($input);
+        return new self((string) $input);
     }
 
     #[Override]

@@ -8,17 +8,24 @@ use InvalidArgumentException;
 use Override;
 use Stringable;
 
-final readonly class FullyQualified implements Stringable
+final readonly class FullyQualified implements ImportableInterface
 {
     public ClassName $className;
     public ?NamespaceName $namespace;
 
     public function __construct(
-        string $part,
-        string ...$parts,
+        string | ImportableInterface $part,
+        string | ImportableInterface ...$parts,
     ) {
+        // Convert ImportableInterface objects to strings
+        $stringPart = $part instanceof ImportableInterface ? (string) $part : $part;
+        $stringParts = array_map(
+            fn($p) => $p instanceof ImportableInterface ? (string) $p : $p,
+            $parts
+        );
+        
         $flattened = array_filter(
-            explode('\\', implode('\\', [$part, ...$parts])),
+            explode('\\', implode('\\', [$stringPart, ...$stringParts])),
             fn($p) => $p !== '',
         );
 
@@ -37,7 +44,7 @@ final readonly class FullyQualified implements Stringable
     /**
      * @phpstan-return ($input is null ? null : self)
      */
-    public static function maybeFromString(null | self | string $input) : ?self
+    public static function maybeFromString(null | self | string | ImportableInterface $input) : ?self
     {
         if ($input === null) {
             return null;

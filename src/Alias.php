@@ -8,14 +8,14 @@ use InvalidArgumentException;
 use Override;
 use Stringable;
 
-final readonly class Alias implements Stringable
+final readonly class Alias implements ImportableInterface
 {
     public string $alias;
-    public FullyQualified | FunctionName | NamespaceName $target;
+    public ImportableInterface $target;
 
     public function __construct(
         string $alias,
-        FullyQualified | FunctionName | NamespaceName $target,
+        ImportableInterface $target,
     ) {
         $alias = trim($alias);
 
