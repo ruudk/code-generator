@@ -13,11 +13,17 @@ final readonly class FullyQualified implements Importable
     public ?NamespaceName $namespace;
 
     public function __construct(
-        string $part,
-        string ...$parts,
+        Importable | string $part,
+        Importable | string ...$parts,
     ) {
         $flattened = array_filter(
-            explode('\\', implode('\\', [$part, ...$parts])),
+            explode(
+                '\\',
+                implode(
+                    '\\',
+                    array_map(strval(...), [$part, ...$parts]),
+                ),
+            ),
             fn($p) => $p !== '',
         );
 
@@ -28,9 +34,7 @@ final readonly class FullyQualified implements Importable
         $classNamePart = array_pop($flattened);
         $this->className = new ClassName($classNamePart);
 
-        $this->namespace = $flattened !== []
-            ? new NamespaceName(implode('\\', $flattened))
-            : null;
+        $this->namespace = $flattened !== [] ? new NamespaceName(implode('\\', $flattened)) : null;
     }
 
     /**

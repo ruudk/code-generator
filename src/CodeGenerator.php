@@ -231,7 +231,7 @@ final class CodeGenerator
         // Import the namespace and return the alias with class name
         return (string) new FullyQualified(
             $this->import($fqcn->namespace),
-            (string) $fqcn->className,
+            $fqcn->className,
         );
     }
 
