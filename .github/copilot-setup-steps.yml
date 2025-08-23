@@ -1,0 +1,35 @@
+# GitHub Copilot Environment Setup
+# This file defines the steps to set up the development environment for GitHub Copilot
+# to better assist with this PHP code generation library.
+#
+# Based on the CI workflow (.github/workflows/ci.yml) to ensure consistency
+# between the development environment and CI pipeline.
+
+# Setup steps that install dependencies and tools needed for this project
+steps:
+  - name: Setup PHP 8.4
+    uses: shivammathur/setup-php@v2
+    with:
+      php-version: '8.4'
+      coverage: none
+      tools: composer
+
+  - name: Cache Composer packages
+    uses: actions/cache@v4
+    with:
+      path: vendor
+      key: ${{ runner.os }}-php-8.4-${{ hashFiles('**/composer.lock') }}
+      restore-keys: |
+        ${{ runner.os }}-php-8.4-
+
+  - name: Install dependencies
+    run: composer install --prefer-dist --no-progress
+
+  - name: Verify development tools are available
+    run: |
+      # Ensure all tools from the CI pipeline are ready
+      vendor/bin/composer-dependency-analyser --version
+      vendor/bin/php-cs-fixer --version  
+      vendor/bin/phpstan --version
+      vendor/bin/phpunit --version
+      composer normalize --version
