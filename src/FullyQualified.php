@@ -53,6 +53,45 @@ final readonly class FullyQualified implements Importable
         return new self((string) $input);
     }
 
+    /**
+     * Check if this class is in the given namespace
+     */
+    public function isInNamespace(?NamespaceName $namespace) : bool
+    {
+        if ($namespace === null || $this->namespace === null) {
+            return $namespace === null && $this->namespace === null;
+        }
+
+        return $this->namespace->equals($namespace);
+    }
+
+    /**
+     * Get the relative path from a parent namespace with the class name
+     */
+    public function getRelativePathFrom(?NamespaceName $parent) : string
+    {
+        // If no parent namespace given, return full path
+        if ($parent === null) {
+            return (string) $this;
+        }
+
+        // If this class has no namespace, just return the class name
+        if ($this->namespace === null) {
+            return (string) $this->className;
+        }
+
+        if ($this->namespace->equals($parent)) {
+            return (string) $this->className;
+        }
+
+        if ($this->namespace->isSubNamespaceOf($parent)) {
+            return $this->namespace->getRelativePathFrom($parent) . '\\' . $this->className;
+        }
+
+        // Not in a sub-namespace, return full path
+        return (string) $this;
+    }
+
     #[Override]
     public function __toString() : string
     {

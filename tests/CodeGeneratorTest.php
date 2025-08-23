@@ -347,6 +347,71 @@ final class CodeGeneratorTest extends TestCase
         );
     }
 
+    public function testImportWithSameNamespaceReturnsClassName() : void
+    {
+        $this->generator = new CodeGenerator('App\\Models');
+
+        $alias = $this->generator->import('App\\Models\\User');
+
+        self::assertSame('User', $alias);
+
+        $this->assertDumpFile(
+            <<<'PHP'
+                <?php
+
+                declare(strict_types=1);
+
+                namespace App\Models;
+
+                PHP,
+            [],
+        );
+    }
+
+    public function testImportByParentWithSubNamespace() : void
+    {
+        $this->generator = new CodeGenerator('App\\Models');
+
+        $alias = $this->generator->importByParent('App\\Models\\User\\Profile');
+
+        self::assertSame('User\\Profile', $alias);
+
+        $this->assertDumpFile(
+            <<<'PHP'
+                <?php
+
+                declare(strict_types=1);
+
+                namespace App\Models;
+
+                PHP,
+            [],
+        );
+    }
+
+    public function testImportByParentWithDeepSubNamespace() : void
+    {
+        $this->generator = new CodeGenerator('App');
+
+        $alias = $this->generator->importByParent('App\\Models\\User\\Profile');
+
+        self::assertSame('User\\Profile', $alias);
+
+        $this->assertDumpFile(
+            <<<'PHP'
+                <?php
+
+                declare(strict_types=1);
+
+                namespace App;
+
+                use App\Models\User;
+
+                PHP,
+            [],
+        );
+    }
+
     public function testDumpAttribute() : void
     {
         self::assertSame(

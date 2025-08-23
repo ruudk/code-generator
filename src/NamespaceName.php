@@ -71,6 +71,40 @@ final class NamespaceName implements Importable
         return new self($this->namespace, $part, ...$parts);
     }
 
+    /**
+     * Check if this namespace is a sub-namespace of another
+     */
+    public function isSubNamespaceOf(self $parent) : bool
+    {
+        return str_starts_with($this->namespace, $parent->namespace . '\\');
+    }
+
+    /**
+     * Check if this namespace is a direct child of another
+     */
+    public function isDirectChildOf(self $parent) : bool
+    {
+        if ( ! $this->isSubNamespaceOf($parent)) {
+            return false;
+        }
+
+        $relativePath = $this->getRelativePathFrom($parent);
+
+        return ! str_contains($relativePath, '\\');
+    }
+
+    /**
+     * Get the relative path from a parent namespace
+     */
+    public function getRelativePathFrom(self $parent) : string
+    {
+        if ( ! $this->isSubNamespaceOf($parent)) {
+            return $this->namespace;
+        }
+
+        return substr($this->namespace, strlen($parent->namespace) + 1);
+    }
+
     #[Override]
     public function equals(object $other) : bool
     {

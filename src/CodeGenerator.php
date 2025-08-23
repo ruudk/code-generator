@@ -188,23 +188,36 @@ final class CodeGenerator
     /**
      * Imports a class, namespace, or function and returns the alias to use in the generated code
      */
-    public function import(Importable | string $fqcnOrEnum) : string
+    public function import(Importable | string $name) : string
     {
-        if ($fqcnOrEnum instanceof FunctionName) {
-            $alias = $this->findAvailableAlias($fqcnOrEnum, $fqcnOrEnum->shortName);
-            $this->imports[$alias] = $fqcnOrEnum;
+        if ($name instanceof FunctionName) {
+            $alias = $this->findAvailableAlias($name, $name->shortName);
+            $this->imports[$alias] = $name;
 
             return $alias;
         }
 
-        if ($fqcnOrEnum instanceof NamespaceName) {
-            $alias = $this->findAvailableAlias($fqcnOrEnum, $fqcnOrEnum->lastPart);
-            $this->imports[$alias] = $fqcnOrEnum;
+        if ($name instanceof NamespaceName) {
+            // Check if we're importing the same namespace as current namespace
+            if ($this->namespace?->equals($name) === true) {
+                // No import needed, just return empty string or handle as needed
+                return '';
+            }
+
+            $alias = $this->findAvailableAlias($name, $name->lastPart);
+            $this->imports[$alias] = $name;
 
             return $alias;
         }
 
-        $fqcn = FullyQualified::maybeFromString($fqcnOrEnum);
+        $fqcn = FullyQualified::maybeFromString($name);
+
+        // Check if the class is in the same namespace as the current namespace
+        if ($this->namespace !== null && $fqcn->namespace !== null && $this->namespace->equals($fqcn->namespace)) {
+            // No import needed, just return the class name
+            return (string) $fqcn->className;
+        }
+
         $alias = $this->findAvailableAlias($fqcn, $fqcn->className->name);
         $this->imports[$alias] = $fqcn;
 
@@ -218,21 +231,26 @@ final class CodeGenerator
     {
         $fqcn = FullyQualified::maybeFromString($name);
 
-        // If there's no namespace, just return the class name
+        // If the class has no namespace, just return the class name
         if ($fqcn->namespace === null) {
             return (string) $fqcn->className;
         }
 
-        // Check if the full target namespace is the same as the current namespace
-        if ($this->namespace?->equals($fqcn->namespace) === true) {
+        // If the class is in the same namespace as the current file, no import needed
+        if ($fqcn->isInNamespace($this->namespace)) {
             return (string) $fqcn->className;
         }
 
-        // Import the namespace and return the alias with class name
-        return (string) new FullyQualified(
-            $this->import($fqcn->namespace),
-            $fqcn->className,
-        );
+        // If it's a direct child of the current namespace, return relative path without import
+        if ($this->namespace !== null && $fqcn->namespace->isDirectChildOf($this->namespace)) {
+            return $fqcn->getRelativePathFrom($this->namespace);
+        }
+
+        // Import the parent namespace and return the short form
+        $alias = $this->findAvailableAlias($fqcn->namespace, $fqcn->namespace->lastPart);
+        $this->imports[$alias] = $fqcn->namespace;
+
+        return $alias . '\\' . $fqcn->className;
     }
 
     /**
