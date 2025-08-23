@@ -213,9 +213,34 @@ final class CodeGenerator
             ? $parentNamespace 
             : new NamespaceName($parentNamespace);
         
-        $fqcn = new FullyQualified($namespace->namespace, $className);
+        // Check if the full target namespace is the same as the current namespace
+        if ($this->namespace !== null && $namespace->equals($this->namespace)) {
+            return $className;
+        }
         
-        return $this->import($fqcn);
+        // Split the namespace into parent and child parts
+        $parts = explode('\\', $namespace->namespace);
+        
+        if (count($parts) === 1) {
+            // If there's only one part, import the full class
+            $fqcn = new FullyQualified($namespace->namespace, $className);
+            return $this->import($fqcn);
+        }
+        
+        // Get the parent part (first segment) and child parts (remaining segments)
+        $parentPart = array_shift($parts);
+        $childParts = $parts;
+        
+        // Create parent namespace (just the first part)
+        $parentNamespaceObj = new NamespaceName($parentPart);
+        
+        // Import the parent namespace
+        $alias = $this->findAvailableAlias($parentNamespaceObj, $parentNamespaceObj->lastPart);
+        $this->imports[$alias] = $parentNamespaceObj;
+        
+        // Return the relative reference from the imported parent namespace
+        $childNamespace = implode('\\', $childParts);
+        return $childNamespace . '\\' . $className;
     }
 
     /**

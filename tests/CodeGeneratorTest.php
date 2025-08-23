@@ -250,7 +250,7 @@ final class CodeGeneratorTest extends TestCase
     {
         $alias = $this->generator->importByParent('App\\Models', 'User');
 
-        self::assertSame('User', $alias);
+        self::assertSame('Models\\User', $alias);
 
         $this->assertDumpFile(
             <<<'PHP'
@@ -258,7 +258,7 @@ final class CodeGeneratorTest extends TestCase
 
                 declare(strict_types=1);
 
-                use App\Models\User;
+                use App;
 
                 PHP,
             [],
@@ -270,7 +270,7 @@ final class CodeGeneratorTest extends TestCase
         $namespace = new NamespaceName('App\\Services');
         $alias = $this->generator->importByParent($namespace, 'UserService');
 
-        self::assertSame('UserService', $alias);
+        self::assertSame('Services\\UserService', $alias);
 
         $this->assertDumpFile(
             <<<'PHP'
@@ -278,7 +278,7 @@ final class CodeGeneratorTest extends TestCase
 
                 declare(strict_types=1);
 
-                use App\Services\UserService;
+                use App;
 
                 PHP,
             [],
@@ -290,8 +290,8 @@ final class CodeGeneratorTest extends TestCase
         $alias1 = $this->generator->importByParent('App\\Models', 'User');
         $alias2 = $this->generator->importByParent('App\\Entities', 'User');
 
-        self::assertSame('User', $alias1);
-        self::assertSame('User2', $alias2);
+        self::assertSame('Models\\User', $alias1);
+        self::assertSame('Entities\\User', $alias2);
 
         $this->assertDumpFile(
             <<<'PHP'
@@ -299,8 +299,7 @@ final class CodeGeneratorTest extends TestCase
 
                 declare(strict_types=1);
 
-                use App\Entities\User as User2;
-                use App\Models\User;
+                use App;
 
                 PHP,
             [],
@@ -322,6 +321,25 @@ final class CodeGeneratorTest extends TestCase
                 declare(strict_types=1);
 
                 namespace App\Models;
+
+                PHP,
+            [],
+        );
+    }
+
+    public function testImportByParentWithThreePartNamespace() : void
+    {
+        $alias = $this->generator->importByParent('App\\Services\\Database', 'Connection');
+
+        self::assertSame('Services\\Database\\Connection', $alias);
+
+        $this->assertDumpFile(
+            <<<'PHP'
+                <?php
+
+                declare(strict_types=1);
+
+                use App;
 
                 PHP,
             [],
