@@ -191,9 +191,28 @@ final class CodeGeneratorTest extends TestCase
 
     public function testImportEnum() : void
     {
-        $reference = $this->generator->import(TestEnum::OPTION_ONE);
+        $reference = $this->generator->importEnum(TestEnum::OPTION_ONE);
 
         self::assertSame('TestEnum::OPTION_ONE', $reference);
+
+        $this->assertDumpFile(
+            <<<'PHP'
+                <?php
+
+                declare(strict_types=1);
+
+                use Ruudk\CodeGenerator\Fixtures\TestEnum;
+
+                PHP,
+            [],
+        );
+    }
+
+    public function testImportEnumDirectly() : void
+    {
+        $reference = $this->generator->importEnum(TestEnum::OPTION_TWO);
+
+        self::assertSame('TestEnum::OPTION_TWO', $reference);
 
         $this->assertDumpFile(
             <<<'PHP'

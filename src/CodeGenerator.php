@@ -178,23 +178,23 @@ final class CodeGenerator
     }
 
     /**
-     * Imports a class, function, or enum and returns the alias to use in the generated code
+     * Imports an enum and returns the fully qualified reference to use in the generated code
      */
-    public function import(FullyQualified | FunctionName | string | UnitEnum $fqcnOrEnum) : string
+    public function importEnum(UnitEnum $enum) : string
+    {
+        return sprintf('%s::%s', $this->import($enum::class), $enum->name);
+    }
+
+    /**
+     * Imports a class or function and returns the alias to use in the generated code
+     */
+    public function import(FullyQualified | FunctionName | string $fqcnOrEnum) : string
     {
         if ($fqcnOrEnum instanceof FunctionName) {
             $alias = $this->findAvailableAlias($fqcnOrEnum, $fqcnOrEnum->shortName);
             $this->imports[$alias] = $fqcnOrEnum;
 
             return $alias;
-        }
-
-        if ($fqcnOrEnum instanceof UnitEnum) {
-            $fqcn = new FullyQualified($fqcnOrEnum::class);
-            $alias = $this->findAvailableAlias($fqcn, $fqcn->className->name);
-            $this->imports[$alias] = $fqcn;
-
-            return sprintf('%s::%s', $alias, $fqcnOrEnum->name);
         }
 
         $fqcn = FullyQualified::maybeFromString($fqcnOrEnum);
