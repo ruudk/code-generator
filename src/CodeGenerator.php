@@ -178,6 +178,18 @@ final class CodeGenerator
     }
 
     /**
+     * Imports an enum and returns the fully qualified reference to use in the generated code
+     */
+    public function importEnum(UnitEnum $enum) : string
+    {
+        $fqcn = new FullyQualified($enum::class);
+        $alias = $this->findAvailableAlias($fqcn, $fqcn->className->name);
+        $this->imports[$alias] = $fqcn;
+
+        return sprintf('%s::%s', $alias, $enum->name);
+    }
+
+    /**
      * Imports a class, function, or enum and returns the alias to use in the generated code
      */
     public function import(FullyQualified | FunctionName | string | UnitEnum $fqcnOrEnum) : string
@@ -190,11 +202,7 @@ final class CodeGenerator
         }
 
         if ($fqcnOrEnum instanceof UnitEnum) {
-            $fqcn = new FullyQualified($fqcnOrEnum::class);
-            $alias = $this->findAvailableAlias($fqcn, $fqcn->className->name);
-            $this->imports[$alias] = $fqcn;
-
-            return sprintf('%s::%s', $alias, $fqcnOrEnum->name);
+            return $this->importEnum($fqcnOrEnum);
         }
 
         $fqcn = FullyQualified::maybeFromString($fqcnOrEnum);
