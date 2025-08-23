@@ -182,27 +182,21 @@ final class CodeGenerator
      */
     public function importEnum(UnitEnum $enum) : string
     {
-        $fqcn = new FullyQualified($enum::class);
-        $alias = $this->findAvailableAlias($fqcn, $fqcn->className->name);
-        $this->imports[$alias] = $fqcn;
+        $alias = $this->import($enum::class);
 
         return sprintf('%s::%s', $alias, $enum->name);
     }
 
     /**
-     * Imports a class, function, or enum and returns the alias to use in the generated code
+     * Imports a class or function and returns the alias to use in the generated code
      */
-    public function import(FullyQualified | FunctionName | string | UnitEnum $fqcnOrEnum) : string
+    public function import(FullyQualified | FunctionName | string $fqcnOrEnum) : string
     {
         if ($fqcnOrEnum instanceof FunctionName) {
             $alias = $this->findAvailableAlias($fqcnOrEnum, $fqcnOrEnum->shortName);
             $this->imports[$alias] = $fqcnOrEnum;
 
             return $alias;
-        }
-
-        if ($fqcnOrEnum instanceof UnitEnum) {
-            return $this->importEnum($fqcnOrEnum);
         }
 
         $fqcn = FullyQualified::maybeFromString($fqcnOrEnum);

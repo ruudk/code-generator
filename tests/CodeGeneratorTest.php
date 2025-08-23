@@ -191,7 +191,7 @@ final class CodeGeneratorTest extends TestCase
 
     public function testImportEnum() : void
     {
-        $reference = $this->generator->import(TestEnum::OPTION_ONE);
+        $reference = $this->generator->importEnum(TestEnum::OPTION_ONE);
 
         self::assertSame('TestEnum::OPTION_ONE', $reference);
 
