@@ -224,14 +224,15 @@ final class CodeGenerator
         }
         
         // Check if the full target namespace is the same as the current namespace
-        if ($this->namespace !== null && $fqcn->namespace->equals($this->namespace)) {
+        if ($this->namespace !== null && $this->namespace->equals($fqcn->namespace) === true) {
             return (string) $fqcn->className;
         }
         
         // Import the namespace and return the alias with class name
-        $namespaceAlias = $this->import($fqcn->namespace);
-        
-        return $namespaceAlias . '\\' . (string) $fqcn->className;
+        return (string) new FullyQualified(
+            $this->import($fqcn->namespace), 
+            (string) $fqcn->className
+        );
     }
 
     /**
