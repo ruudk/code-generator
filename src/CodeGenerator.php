@@ -217,21 +217,21 @@ final class CodeGenerator
     public function importByParent(FullyQualified | string $name) : string
     {
         $fqcn = FullyQualified::maybeFromString($name);
-        
+
         // If there's no namespace, just return the class name
         if ($fqcn->namespace === null) {
             return (string) $fqcn->className;
         }
-        
+
         // Check if the full target namespace is the same as the current namespace
         if ($this->namespace?->equals($fqcn->namespace) === true) {
             return (string) $fqcn->className;
         }
-        
+
         // Import the namespace and return the alias with class name
         return (string) new FullyQualified(
-            $this->import($fqcn->namespace), 
-            (string) $fqcn->className
+            $this->import($fqcn->namespace),
+            (string) $fqcn->className,
         );
     }
 
