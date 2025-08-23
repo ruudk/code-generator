@@ -205,7 +205,7 @@ final class CodeGenerator
     }
 
     /**
-     * Imports a class by importing its parent namespace and returning the class name
+     * Imports a class by importing its parent namespace and returning the relative path
      */
     public function importByParent(FullyQualified | string $name) : string
     {
@@ -230,7 +230,7 @@ final class CodeGenerator
         }
         
         // Remove the last part (keep all but the last part as parent)
-        array_pop($parts);
+        $lastPart = array_pop($parts);
         $parentNamespace = implode('\\', $parts);
         
         // Create parent namespace object
@@ -240,8 +240,8 @@ final class CodeGenerator
         $alias = $this->findAvailableAlias($parentNamespaceObj, $parentNamespaceObj->lastPart);
         $this->imports[$alias] = $parentNamespaceObj;
         
-        // Return just the class name
-        return (string) $fqcn->className;
+        // Return the relative path from the imported namespace to the target class
+        return $lastPart . '\\' . (string) $fqcn->className;
     }
 
     /**

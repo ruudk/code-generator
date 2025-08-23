@@ -250,7 +250,7 @@ final class CodeGeneratorTest extends TestCase
     {
         $alias = $this->generator->importByParent('App\\Models\\User');
 
-        self::assertSame('User', $alias);
+        self::assertSame('Models\\User', $alias);
 
         $this->assertDumpFile(
             <<<'PHP'
@@ -258,7 +258,7 @@ final class CodeGeneratorTest extends TestCase
 
                 declare(strict_types=1);
 
-                use App\Models;
+                use App;
 
                 PHP,
             [],
@@ -270,7 +270,7 @@ final class CodeGeneratorTest extends TestCase
         $fqcn = new FullyQualified('App\\Services\\UserService');
         $alias = $this->generator->importByParent($fqcn);
 
-        self::assertSame('UserService', $alias);
+        self::assertSame('Services\\UserService', $alias);
 
         $this->assertDumpFile(
             <<<'PHP'
@@ -278,7 +278,7 @@ final class CodeGeneratorTest extends TestCase
 
                 declare(strict_types=1);
 
-                use App\Services;
+                use App;
 
                 PHP,
             [],
@@ -290,8 +290,8 @@ final class CodeGeneratorTest extends TestCase
         $alias1 = $this->generator->importByParent('App\\Models\\User');
         $alias2 = $this->generator->importByParent('App\\Entities\\User');
 
-        self::assertSame('User', $alias1);
-        self::assertSame('User', $alias2);
+        self::assertSame('Models\\User', $alias1);
+        self::assertSame('Entities\\User', $alias2);
 
         $this->assertDumpFile(
             <<<'PHP'
@@ -299,8 +299,7 @@ final class CodeGeneratorTest extends TestCase
 
                 declare(strict_types=1);
 
-                use App\Entities;
-                use App\Models;
+                use App;
 
                 PHP,
             [],
@@ -332,7 +331,7 @@ final class CodeGeneratorTest extends TestCase
     {
         $alias = $this->generator->importByParent('App\\Services\\Database\\Connection');
 
-        self::assertSame('Connection', $alias);
+        self::assertSame('Database\\Connection', $alias);
 
         $this->assertDumpFile(
             <<<'PHP'
@@ -340,7 +339,7 @@ final class CodeGeneratorTest extends TestCase
 
                 declare(strict_types=1);
 
-                use App\Services\Database;
+                use App\Services;
 
                 PHP,
             [],
