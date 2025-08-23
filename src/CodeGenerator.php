@@ -224,7 +224,7 @@ final class CodeGenerator
         }
         
         // Check if the full target namespace is the same as the current namespace
-        if ($this->namespace !== null && $this->namespace->equals($fqcn->namespace) === true) {
+        if ($this->namespace?->equals($fqcn->namespace) === true) {
             return (string) $fqcn->className;
         }
         
