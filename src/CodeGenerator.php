@@ -182,9 +182,7 @@ final class CodeGenerator
      */
     public function importEnum(UnitEnum $enum) : string
     {
-        $alias = $this->import($enum::class);
-
-        return sprintf('%s::%s', $alias, $enum->name);
+        return sprintf('%s::%s', $this->import($enum::class), $enum->name);
     }
 
     /**
