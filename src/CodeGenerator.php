@@ -186,12 +186,19 @@ final class CodeGenerator
     }
 
     /**
-     * Imports a class or function and returns the alias to use in the generated code
+     * Imports a class, namespace, or function and returns the alias to use in the generated code
      */
-    public function import(FullyQualified | FunctionName | string $fqcnOrEnum) : string
+    public function import(FullyQualified | FunctionName | NamespaceName | string $fqcnOrEnum) : string
     {
         if ($fqcnOrEnum instanceof FunctionName) {
             $alias = $this->findAvailableAlias($fqcnOrEnum, $fqcnOrEnum->shortName);
+            $this->imports[$alias] = $fqcnOrEnum;
+
+            return $alias;
+        }
+
+        if ($fqcnOrEnum instanceof NamespaceName) {
+            $alias = $this->findAvailableAlias($fqcnOrEnum, $fqcnOrEnum->lastPart);
             $this->imports[$alias] = $fqcnOrEnum;
 
             return $alias;
@@ -202,6 +209,30 @@ final class CodeGenerator
         $this->imports[$alias] = $fqcn;
 
         return $alias;
+    }
+
+    /**
+     * Imports a class by importing its parent namespace and returning the relative path
+     */
+    public function importByParent(FullyQualified | string $name) : string
+    {
+        $fqcn = FullyQualified::maybeFromString($name);
+
+        // If there's no namespace, just return the class name
+        if ($fqcn->namespace === null) {
+            return (string) $fqcn->className;
+        }
+
+        // Check if the full target namespace is the same as the current namespace
+        if ($this->namespace?->equals($fqcn->namespace) === true) {
+            return (string) $fqcn->className;
+        }
+
+        // Import the namespace and return the alias with class name
+        return (string) new FullyQualified(
+            $this->import($fqcn->namespace),
+            (string) $fqcn->className,
+        );
     }
 
     /**
