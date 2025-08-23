@@ -221,27 +221,11 @@ final class CodeGenerator
             return (string) $fqcn->className;
         }
         
-        // Split the namespace into parts
-        $parts = explode('\\', $fqcn->namespace->namespace);
+        // Import the namespace and return the alias with class name
+        $namespaceAlias = $this->findAvailableAlias($fqcn->namespace, $fqcn->namespace->lastPart);
+        $this->imports[$namespaceAlias] = $fqcn->namespace;
         
-        if (count($parts) === 1) {
-            // If there's only one part, import the full class
-            return $this->import($fqcn);
-        }
-        
-        // Remove the last part (keep all but the last part as parent)
-        $lastPart = array_pop($parts);
-        $parentNamespace = implode('\\', $parts);
-        
-        // Create parent namespace object
-        $parentNamespaceObj = new NamespaceName($parentNamespace);
-        
-        // Import the parent namespace
-        $alias = $this->findAvailableAlias($parentNamespaceObj, $parentNamespaceObj->lastPart);
-        $this->imports[$alias] = $parentNamespaceObj;
-        
-        // Return the relative path from the imported namespace to the target class
-        return $lastPart . '\\' . (string) $fqcn->className;
+        return $namespaceAlias . '\\' . (string) $fqcn->className;
     }
 
     /**

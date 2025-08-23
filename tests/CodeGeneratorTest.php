@@ -258,7 +258,7 @@ final class CodeGeneratorTest extends TestCase
 
                 declare(strict_types=1);
 
-                use App;
+                use App\Models;
 
                 PHP,
             [],
@@ -278,7 +278,7 @@ final class CodeGeneratorTest extends TestCase
 
                 declare(strict_types=1);
 
-                use App;
+                use App\Services;
 
                 PHP,
             [],
@@ -299,7 +299,8 @@ final class CodeGeneratorTest extends TestCase
 
                 declare(strict_types=1);
 
-                use App;
+                use App\Entities;
+                use App\Models;
 
                 PHP,
             [],
@@ -339,7 +340,7 @@ final class CodeGeneratorTest extends TestCase
 
                 declare(strict_types=1);
 
-                use App\Services;
+                use App\Services\Database;
 
                 PHP,
             [],
