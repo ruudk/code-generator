@@ -246,6 +246,88 @@ final class CodeGeneratorTest extends TestCase
         );
     }
 
+    public function testImportByParentWithString() : void
+    {
+        $alias = $this->generator->importByParent('App\\Models', 'User');
+
+        self::assertSame('User', $alias);
+
+        $this->assertDumpFile(
+            <<<'PHP'
+                <?php
+
+                declare(strict_types=1);
+
+                use App\Models\User;
+
+                PHP,
+            [],
+        );
+    }
+
+    public function testImportByParentWithNamespaceName() : void
+    {
+        $namespace = new NamespaceName('App\\Services');
+        $alias = $this->generator->importByParent($namespace, 'UserService');
+
+        self::assertSame('UserService', $alias);
+
+        $this->assertDumpFile(
+            <<<'PHP'
+                <?php
+
+                declare(strict_types=1);
+
+                use App\Services\UserService;
+
+                PHP,
+            [],
+        );
+    }
+
+    public function testImportByParentWithConflict() : void
+    {
+        $alias1 = $this->generator->importByParent('App\\Models', 'User');
+        $alias2 = $this->generator->importByParent('App\\Entities', 'User');
+
+        self::assertSame('User', $alias1);
+        self::assertSame('User2', $alias2);
+
+        $this->assertDumpFile(
+            <<<'PHP'
+                <?php
+
+                declare(strict_types=1);
+
+                use App\Entities\User as User2;
+                use App\Models\User;
+
+                PHP,
+            [],
+        );
+    }
+
+    public function testImportByParentSameNamespace() : void
+    {
+        $this->generator = new CodeGenerator('App\\Models');
+
+        $alias = $this->generator->importByParent('App\\Models', 'User');
+
+        self::assertSame('User', $alias);
+
+        $this->assertDumpFile(
+            <<<'PHP'
+                <?php
+
+                declare(strict_types=1);
+
+                namespace App\Models;
+
+                PHP,
+            [],
+        );
+    }
+
     public function testDumpAttribute() : void
     {
         self::assertSame(

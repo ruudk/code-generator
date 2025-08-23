@@ -205,6 +205,20 @@ final class CodeGenerator
     }
 
     /**
+     * Imports a class by specifying its parent namespace and class name separately
+     */
+    public function importByParent(NamespaceName | string $parentNamespace, string $className) : string
+    {
+        $namespace = $parentNamespace instanceof NamespaceName 
+            ? $parentNamespace 
+            : new NamespaceName($parentNamespace);
+        
+        $fqcn = new FullyQualified($namespace->namespace, $className);
+        
+        return $this->import($fqcn);
+    }
+
+    /**
      * Generates a PHP attribute string for the given fully qualified class name
      */
     public function dumpAttribute(FullyQualified | string $fqcn) : string
