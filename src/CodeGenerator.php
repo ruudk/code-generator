@@ -159,7 +159,7 @@ final class CodeGenerator
     /**
      * Finds an available alias for a type, appending numbers if the alias is already taken
      */
-    private function findAvailableAlias(Alias | FullyQualified | FunctionName | NamespaceName $type, string $alias, int $i = 1) : string
+    private function findAvailableAlias(Importable $type, string $alias, int $i = 1) : string
     {
         $aliasToCheck = $i === 1 ? $alias : sprintf('%s%d', $alias, $i);
 
@@ -188,7 +188,7 @@ final class CodeGenerator
     /**
      * Imports a class, namespace, or function and returns the alias to use in the generated code
      */
-    public function import(FullyQualified | FunctionName | NamespaceName | string $fqcnOrEnum) : string
+    public function import(Importable | string $fqcnOrEnum) : string
     {
         if ($fqcnOrEnum instanceof FunctionName) {
             $alias = $this->findAvailableAlias($fqcnOrEnum, $fqcnOrEnum->shortName);
@@ -214,7 +214,7 @@ final class CodeGenerator
     /**
      * Imports a class by importing its parent namespace and returning the relative path
      */
-    public function importByParent(FullyQualified | string $name) : string
+    public function importByParent(Importable | string $name) : string
     {
         $fqcn = FullyQualified::maybeFromString($name);
 

@@ -6,9 +6,8 @@ namespace Ruudk\CodeGenerator;
 
 use InvalidArgumentException;
 use Override;
-use Stringable;
 
-final class NamespaceName implements Stringable
+final class NamespaceName implements Importable
 {
     /**
      * @var non-empty-string
@@ -45,7 +44,7 @@ final class NamespaceName implements Stringable
     /**
      * @phpstan-return ($input is null ? null : self)
      */
-    public static function maybeFromString(null | self | string $input) : ?self
+    public static function maybeFromString(null | Importable | self | string $input) : ?self
     {
         if ($input === null) {
             return null;
@@ -55,7 +54,7 @@ final class NamespaceName implements Stringable
             return $input;
         }
 
-        return new self($input);
+        return new self((string) $input);
     }
 
     #[Override]
@@ -72,11 +71,13 @@ final class NamespaceName implements Stringable
         return new self($this->namespace, $part, ...$parts);
     }
 
+    #[Override]
     public function equals(object $other) : bool
     {
         return $other instanceof self && $this->namespace === $other->namespace;
     }
 
+    #[Override]
     public function compare(object $other) : int
     {
         $thisStr = str_replace('\\', ' ', $this->namespace);

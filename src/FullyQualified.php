@@ -6,9 +6,8 @@ namespace Ruudk\CodeGenerator;
 
 use InvalidArgumentException;
 use Override;
-use Stringable;
 
-final readonly class FullyQualified implements Stringable
+final readonly class FullyQualified implements Importable
 {
     public ClassName $className;
     public ?NamespaceName $namespace;
@@ -37,7 +36,7 @@ final readonly class FullyQualified implements Stringable
     /**
      * @phpstan-return ($input is null ? null : self)
      */
-    public static function maybeFromString(null | self | string $input) : ?self
+    public static function maybeFromString(null | Importable | self | string $input) : ?self
     {
         if ($input === null) {
             return null;
@@ -47,7 +46,7 @@ final readonly class FullyQualified implements Stringable
             return $input;
         }
 
-        return new self($input);
+        return new self((string) $input);
     }
 
     #[Override]
@@ -60,11 +59,13 @@ final readonly class FullyQualified implements Stringable
         return $this->namespace . '\\' . $this->className;
     }
 
+    #[Override]
     public function equals(object $other) : bool
     {
         return $other instanceof self && (string) $this === (string) $other;
     }
 
+    #[Override]
     public function compare(object $other) : int
     {
         $thisStr = str_replace('\\', ' ', (string) $this);
