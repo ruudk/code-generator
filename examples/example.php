@@ -17,8 +17,8 @@ echo $generator->dumpFile(function () use ($generator) {
     yield '';
 
     // Class with attributes
-    yield $generator->dumpAttribute('Example\Attributes\Entity');
-    yield $generator->dumpAttribute('Example\Attributes\Table');
+    yield from $generator->dumpAttribute('Example\Attributes\Entity');
+    yield from $generator->dumpAttribute('Example\Attributes\Table');
     yield sprintf(
         'final class DemoClass extends %s implements %s, %s',
         $generator->import('Example\BaseClass'),

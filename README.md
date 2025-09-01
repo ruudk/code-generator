@@ -105,6 +105,8 @@ echo $generator->dumpFile([
     '',
 
     $generator->dumpAttribute('Example\Attributes\Something'),
+    $generator->dumpAttribute('Example\Attributes\Single', ['value: "Hello, World!"']),
+    $generator->dumpAttribute('Example\Attributes\Multiple', ['value: "Hello, World!"', 'other: "Other value"']),
     sprintf(
         'final readonly class %s extends %s',
         $generator->import('Example\Demo'),
@@ -140,6 +142,8 @@ declare(strict_types=1);
 namespace Example\Demo;
 
 use DateTimeImmutable;
+use Example\Attributes\Multiple;
+use Example\Attributes\Single;
 use Example\Attributes\Something;
 use Example\Demo;
 use Example\Parent;
@@ -147,6 +151,11 @@ use Example\Parent;
 // Auto-generated example file
 
 #[Something]
+#[Single(value: "Hello, World!")]
+#[Multiple(
+    value: "Hello, World!",
+    other: "Other value",
+)]
 final readonly class Demo extends Parent
 {
     public function __construct(
@@ -183,8 +192,8 @@ echo $generator->dumpFile(function () use ($generator) {
     yield '';
 
     // Class with attributes
-    yield $generator->dumpAttribute('Example\Attributes\Entity');
-    yield $generator->dumpAttribute('Example\Attributes\Table');
+    yield from $generator->dumpAttribute('Example\Attributes\Entity');
+    yield from $generator->dumpAttribute('Example\Attributes\Table');
     yield sprintf(
         'final class DemoClass extends %s implements %s, %s',
         $generator->import('Example\BaseClass'),

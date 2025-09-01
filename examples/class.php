@@ -13,6 +13,8 @@ echo $generator->dumpFile([
     '',
 
     $generator->dumpAttribute('Example\Attributes\Something'),
+    $generator->dumpAttribute('Example\Attributes\Single', ['value: "Hello, World!"']),
+    $generator->dumpAttribute('Example\Attributes\Multiple', ['value: "Hello, World!"', 'other: "Other value"']),
     sprintf(
         'final readonly class %s extends %s',
         $generator->import('Example\Demo'),
