@@ -414,9 +414,22 @@ final class CodeGeneratorTest extends TestCase
 
     public function testDumpAttribute() : void
     {
-        self::assertSame(
+        $this->assertDump(
             '#[Required]',
             $this->generator->dumpAttribute('App\\Attributes\\Required'),
+        );
+        $this->assertDump(
+            '#[Required(true)]',
+            $this->generator->dumpAttribute('App\\Attributes\\Required', ['true']),
+        );
+        $this->assertDump(
+            <<<'PHP'
+                #[Required(
+                    true,
+                    false,
+                )]
+                PHP,
+            $this->generator->dumpAttribute('App\\Attributes\\Required', ['true', 'false']),
         );
     }
 

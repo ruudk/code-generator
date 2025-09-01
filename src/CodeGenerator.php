@@ -255,10 +255,26 @@ final class CodeGenerator
 
     /**
      * Generates a PHP attribute string for the given fully qualified class name
+     *
+     * @param CodeLines $args
+     * @return Generator<CodeLine>
      */
-    public function dumpAttribute(FullyQualified | string $fqcn) : string
-    {
-        return sprintf('#[%s]', $this->import($fqcn));
+    public function dumpAttribute(
+        FullyQualified | string $fqcn,
+        array | Closure | Generator | string $args = [],
+        bool $addCommaAfterEachArgument = true,
+    ) : Generator {
+        $args = self::resolveIterable($args);
+
+        if ($args === []) {
+            yield sprintf('#[%s]', $this->import($fqcn));
+        } elseif (count($args) === 1) {
+            yield from $this->wrap(sprintf('#[%s(', $this->import($fqcn)), $args, ')]');
+        } else {
+            yield sprintf('#[%s(', $this->import($fqcn));
+            yield Group::indent($addCommaAfterEachArgument ? $this->allSuffix(',', $args) : $args);
+            yield ')]';
+        }
     }
 
     /**
