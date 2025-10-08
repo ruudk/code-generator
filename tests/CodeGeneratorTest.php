@@ -452,12 +452,22 @@ final class CodeGeneratorTest extends TestCase
     public function testDumpClassReferenceWithoutImport() : void
     {
         self::assertSame(
-            '\\App\\Models\\User::class',
+            'App\\Models\\User::class',
             $this->generator->dumpClassReference('App\\Models\\User', false),
         );
         self::assertSame(
-            '\\App\\Models\\User::class',
+            'App\\Models\\User::class',
             $this->generator->dumpClassReference('\\App\\Models\\User', false),
+        );
+
+        $generator = new CodeGenerator('App');
+        self::assertSame(
+            '\\App\\Models\\User::class',
+            $generator->dumpClassReference('App\\Models\\User', false),
+        );
+        self::assertSame(
+            '\\App\\Models\\User::class',
+            $generator->dumpClassReference('\\App\\Models\\User', false),
         );
     }
 
