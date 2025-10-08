@@ -289,7 +289,8 @@ final class CodeGenerator
             match (true) {
                 $import && $byParent => $this->importByParent($fqcn),
                 $import => $this->import($fqcn),
-                default => '\\' . $fqcn,
+                $this->namespace !== null => '\\' . $fqcn,
+                default => $fqcn,
             },
         );
     }
