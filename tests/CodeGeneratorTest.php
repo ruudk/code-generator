@@ -1025,6 +1025,51 @@ final class CodeGeneratorTest extends TestCase
         );
     }
 
+    public function testDumpCallWithoutCommaAfterEachArgumentAddsTrailingComma() : void
+    {
+        $this->assertDump(
+            <<<'PHP'
+                Helper::process(
+                    match (true) {
+                        $a => 1,
+                        default => 2,
+                    },
+                )
+                PHP,
+            $this->generator->dumpCall('App\\Utils\\Helper', 'process', [
+                'match (true) {',
+                $this->generator->indent(function () {
+                    yield '$a => 1,';
+                    yield 'default => 2,';
+                }),
+                '}',
+            ], true, false),
+        );
+    }
+
+    public function testDumpCallOnIterableWithoutCommaAfterEachArgumentAddsTrailingComma() : void
+    {
+        $this->assertDump(
+            <<<'PHP'
+                $object
+                    ->method(
+                        match (true) {
+                            $a => 1,
+                            default => 2,
+                        },
+                    )
+                PHP,
+            $this->generator->dumpCall(['$object'], 'method', [
+                'match (true) {',
+                $this->generator->indent(function () {
+                    yield '$a => 1,';
+                    yield 'default => 2,';
+                }),
+                '}',
+            ], false, false),
+        );
+    }
+
     public function testDumpFileWithNoImportsHasNoExtraNewline() : void
     {
         $this->generator = new CodeGenerator('App\\Services');
