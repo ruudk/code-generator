@@ -214,8 +214,14 @@ final class CodeGenerator
 
         // Check if the class is in the same namespace as the current namespace
         if ($this->namespace !== null && $fqcn->namespace !== null && $this->namespace->equals($fqcn->namespace)) {
-            // No import needed, just return the class name
-            return (string) $fqcn->className;
+            // No import needed, but reserve the short name so later imports from
+            // other namespaces are aliased instead of colliding with the local
+            // declaration (PHP would reject `use X\Y\Foo;` in a file that also
+            // declares `class Foo`).
+            $alias = (string) $fqcn->className;
+            $this->imports[$alias] ??= $fqcn;
+
+            return $alias;
         }
 
         $alias = $this->findAvailableAlias($fqcn, $fqcn->className->name);

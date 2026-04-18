@@ -170,6 +170,31 @@ final class CodeGeneratorTest extends TestCase
         );
     }
 
+    public function testImportClassConflictsWithSameNamespaceDeclaration() : void
+    {
+        $this->generator = new CodeGenerator('App\\Models');
+
+        $local = $this->generator->import('App\\Models\\User');
+        $external = $this->generator->import('App\\Domain\\User');
+
+        self::assertSame('User', $local);
+        self::assertSame('User2', $external);
+
+        $this->assertDumpFile(
+            <<<'PHP'
+                <?php
+
+                declare(strict_types=1);
+
+                namespace App\Models;
+
+                use App\Domain\User as User2;
+
+                PHP,
+            [],
+        );
+    }
+
     public function testImportFunction() : void
     {
         $alias = $this->generator->import(new FunctionName('array_map'));
