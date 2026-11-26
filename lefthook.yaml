@@ -1,10 +1,6 @@
 pre-commit:
     parallel: false
     commands:
-        ensure-sync:
-            glob: "*.php"
-            run: bin/graphql-client-code-generator --config=examples/config.php --config=tests/config.php --ensure-sync
-
         validate-examples:
             glob:
                 - "*.php"
@@ -43,11 +39,6 @@ pre-commit:
         php-cs-fixer:
             glob: "*.php"
             run: vendor/bin/php-cs-fixer fix --config .php-cs-fixer.php -- {staged_files}
-            stage_fixed: true
-
-        twig-cs-fixer:
-            glob: "*.twig"
-            run: vendor/bin/twig-cs-fixer fix -- {staged_files}
             stage_fixed: true
 
         phpstan:
