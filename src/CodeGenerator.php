@@ -73,7 +73,7 @@ final class CodeGenerator
      */
     private function dumpImports(): Generator
     {
-        uasort($this->imports, fn($left, $right) => $left->compare($right));
+        uasort($this->imports, static fn($left, $right) => $left->compare($right));
 
         foreach ($this->imports as $alias => $import) {
             if ($import instanceof Alias) {
@@ -256,7 +256,7 @@ final class CodeGenerator
         $alias = $this->findAvailableAlias($fqcn->namespace, $fqcn->namespace->lastPart);
         $this->imports[$alias] = $fqcn->namespace;
 
-        return $alias . '\\' . $fqcn->className;
+        return $alias . '\\' . $fqcn->className->name;
     }
 
     /**
@@ -293,7 +293,7 @@ final class CodeGenerator
         return sprintf('%s::class', match (true) {
             $import && $byParent => $this->importByParent($fqcn),
             $import => $this->import($fqcn),
-            $this->namespace !== null => '\\' . $fqcn,
+            $this->namespace !== null => '\\' . (string) $fqcn,
             default => $fqcn,
         });
     }
@@ -314,7 +314,7 @@ final class CodeGenerator
             }
 
             $line = implode(PHP_EOL, array_map(
-                fn($line) => str_repeat('    ', $level) . $line,
+                static fn($line) => str_repeat('    ', max(0, $level)) . $line,
                 explode(PHP_EOL, $line),
             ));
 
@@ -328,10 +328,10 @@ final class CodeGenerator
     public function maybeNowDoc(string $input, string $tag = 'EOD'): string
     {
         if (!str_contains($input, PHP_EOL)) {
-            return var_export($input, true);
+            return var_export($input, return: true);
         }
 
-        return sprintf("<<<'%s'\n%s", $tag, implode(PHP_EOL, array_map(fn($line) => '    ' . $line, [
+        return sprintf("<<<'%s'\n%s", $tag, implode(PHP_EOL, array_map(static fn($line) => '    ' . $line, [
             ...explode(PHP_EOL, $input),
             $tag,
         ])));
@@ -355,15 +355,16 @@ final class CodeGenerator
      */
     public function suffixLast(string $suffix, array|Closure|Generator|string $data): Generator
     {
+        $previousValue = null;
         foreach (self::resolveIterable($data) as $line) {
-            if (isset($previousValue)) {
+            if ($previousValue !== null) {
                 yield $previousValue;
             }
 
             $previousValue = $line;
         }
 
-        if (isset($previousValue)) {
+        if ($previousValue !== null) {
             if ($previousValue instanceof Group) {
                 yield Group::indent($this->suffixLast($suffix, $previousValue->lines), $previousValue->indention);
 
@@ -517,7 +518,7 @@ final class CodeGenerator
     {
         $resolved = [];
         foreach (self::resolveIterable($data) as $item) {
-            $resolved[] = $item instanceof Group ? '' : (string) $item;
+            $resolved[] = $item instanceof Group ? '' : $item;
         }
 
         return implode($delimiter, $resolved);
@@ -544,9 +545,9 @@ final class CodeGenerator
 
             if ($i === 1) {
                 ++$i;
+                $prefix = $first instanceof Group || $first === null ? '' : $first;
 
                 if ($line instanceof Group) {
-                    $prefix = $first instanceof Group ? '' : (string) $first;
                     $lines = self::resolveIterable($line->lines);
 
                     if ($lines === []) {
@@ -558,7 +559,6 @@ final class CodeGenerator
                     continue;
                 }
 
-                $prefix = $first instanceof Group ? '' : (string) $first;
                 yield $prefix . $line;
 
                 continue;
@@ -568,7 +568,7 @@ final class CodeGenerator
             yield $line;
         }
 
-        if ($i === 1) {
+        if ($i === 1 && $first !== null) {
             yield $first;
         }
     }
@@ -703,7 +703,7 @@ final class CodeGenerator
      */
     public static function resolveIterable(array|Closure|Generator|string $iterable): array
     {
-        if (is_callable($iterable)) {
+        if ($iterable instanceof Closure) {
             $iterable = $iterable();
         }
 
@@ -714,7 +714,7 @@ final class CodeGenerator
         $resolved = [];
         foreach ($iterable as $item) {
             if ($item instanceof Generator) {
-                $resolved = array_merge($resolved, iterator_to_array($item, false));
+                $resolved = array_merge($resolved, iterator_to_array($item, preserve_keys: false));
             } else {
                 $resolved[] = $item;
             }

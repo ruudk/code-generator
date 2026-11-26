@@ -29,7 +29,7 @@ final class GroupTest extends TestCase
 
     public function testConstructorWithCallable(): void
     {
-        $callable = function () {
+        $callable = static function () {
             yield 'line 1';
             yield 'line 2';
         };
@@ -51,7 +51,7 @@ final class GroupTest extends TestCase
 
     public function testConstructorWithGenerator(): void
     {
-        $generator = function () {
+        $generator = static function () {
             yield 'line 1';
             yield 'line 2';
             yield 'line 3';
@@ -81,7 +81,7 @@ final class GroupTest extends TestCase
 
     public function testIndentStaticMethodWithCallable(): void
     {
-        $callable = function () {
+        $callable = static function () {
             yield 'indented 1';
             yield 'indented 2';
         };
@@ -117,7 +117,7 @@ final class GroupTest extends TestCase
 
     public function testIsEmptyWithEmptyCallable(): void
     {
-        $callable = function () {
+        $callable = static function () {
             yield from [];
         };
 
@@ -171,7 +171,7 @@ final class GroupTest extends TestCase
     public function testMixedContentTypes(): void
     {
         $nestedGroup = new Group('nested');
-        $callable = function () use ($nestedGroup) {
+        $callable = static function () use ($nestedGroup) {
             yield 'from callable 1';
             yield $nestedGroup;
             yield 'from callable 2';

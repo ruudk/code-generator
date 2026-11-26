@@ -84,7 +84,7 @@ final class CodeGeneratorTest extends TestCase
                 {
                 }
                 PHP,
-            function () {
+            static function () {
                 yield 'class Bar';
                 yield '{';
                 yield '}';
@@ -619,11 +619,11 @@ final class CodeGeneratorTest extends TestCase
 
     public function testDumpCallWithArrayOfGenerators(): void
     {
-        $true = function (): Generator {
+        $true = static function (): Generator {
             yield 'true';
         };
 
-        $false = function (): Generator {
+        $false = static function (): Generator {
             yield 'false';
         };
 
@@ -696,7 +696,7 @@ final class CodeGeneratorTest extends TestCase
 
     public function testResolveIterableWithCallable(): void
     {
-        $callable = function () {
+        $callable = static function () {
             yield 'generated1';
             yield 'generated2';
         };
@@ -708,7 +708,7 @@ final class CodeGeneratorTest extends TestCase
     {
         self::assertSame(
             ['item1', 'item2'],
-            CodeGenerator::resolveIterable(function () {
+            CodeGenerator::resolveIterable(static function () {
                 yield 'item1';
                 yield 'item2';
             }),
@@ -746,10 +746,10 @@ final class CodeGeneratorTest extends TestCase
 
             PHP;
 
-        $this->assertDumpFile($expected, function () {
+        $this->assertDumpFile($expected, static function () {
             yield 'class UserService';
             yield '{';
-            yield Group::indent(function () {
+            yield Group::indent(static function () {
                 yield 'public function __construct(';
                 yield Group::indent([
                     'private UserRepository $repository,',
@@ -890,7 +890,7 @@ final class CodeGeneratorTest extends TestCase
             'process',
             [
                 'match (true) {',
-                $this->generator->indent(function () {
+                $this->generator->indent(static function () {
                     yield '$a => 1,';
                     yield 'default => 2,';
                 }),
@@ -916,7 +916,7 @@ final class CodeGeneratorTest extends TestCase
             'method',
             [
                 'match (true) {',
-                $this->generator->indent(function () {
+                $this->generator->indent(static function () {
                     yield '$a => 1,';
                     yield 'default => 2,';
                 }),
@@ -1005,7 +1005,7 @@ final class CodeGeneratorTest extends TestCase
 
                 }
                 PHP,
-            function () {
+            static function () {
                 yield 'class UserService';
                 yield '{';
                 yield '';
@@ -1129,7 +1129,7 @@ final class CodeGeneratorTest extends TestCase
             <<<'PHP'
                 actual content
                 PHP,
-            $this->generator->trim(function () {
+            $this->generator->trim(static function () {
                 yield '';
                 yield '';
                 yield 'actual content';
@@ -1241,7 +1241,7 @@ final class CodeGeneratorTest extends TestCase
             PHP, [
             'class Person',
             '{',
-            $this->generator->indent(function () {
+            $this->generator->indent(static function () {
                 yield '';
                 yield 'private string $name;';
                 yield '';
@@ -1313,7 +1313,7 @@ final class CodeGeneratorTest extends TestCase
                     // }
                 // }
                 PHP,
-            $this->generator->prefix('// ', function () {
+            $this->generator->prefix('// ', static function () {
                 yield 'class Example';
                 yield '{';
                 yield Group::indent([
