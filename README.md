@@ -120,10 +120,15 @@ echo $generator->dumpFile([
         });
         yield ') {';
         yield $generator->indent(function () use ($generator) {
-            yield from $generator->statement($generator->dumpCall('parent', '__construct', [
-                "'Hello, World!'",
-                'true',
-            ], true));
+            yield from $generator->statement($generator->dumpCall(
+                'parent',
+                '__construct',
+                [
+                    "'Hello, World!'",
+                    'true',
+                ],
+                true,
+            ));
         });
         yield '}';
     }),
@@ -226,35 +231,37 @@ echo $generator->dumpFile(function () use ($generator) {
         yield ') {';
         $generator->indent(function () use ($generator) {
             // Parent constructor call
-            yield from $generator->dumpCall('parent', '__construct', [
-                'enabled: true',
-                'timeout: 30',
-            ], static: true);
+            yield from $generator->dumpCall(
+                'parent',
+                '__construct',
+                [
+                    'enabled: true',
+                    'timeout: 30',
+                ],
+                static: true,
+            );
 
             yield '';
 
             // Method chaining with dumpCall
-            yield from $generator->statement(
-                $generator->dumpCall(
-                    $generator->dumpCall(
-                        $generator->dumpCall('$this', 'getBuilder'),
-                        'setName',
-                        ['$name'],
-                    ),
-                    'setDebug',
-                    ['true'],
-                ),
-            );
+            yield from $generator->statement($generator->dumpCall(
+                $generator->dumpCall($generator->dumpCall('$this', 'getBuilder'), 'setName', ['$name']),
+                'setDebug',
+                ['true'],
+            ));
 
             yield '';
 
             // Static method call
-            yield from $generator->statement(
-                $generator->dumpCall('Logger', 'info', [
+            yield from $generator->statement($generator->dumpCall(
+                'Logger',
+                'info',
+                [
                     '\'Constructor initialized\'',
                     '[\'class\' => __CLASS__]',
-                ], static: true),
-            );
+                ],
+                static: true,
+            ));
         });
         yield '}';
         yield '';
@@ -267,44 +274,40 @@ echo $generator->dumpFile(function () use ($generator) {
         yield '{';
         yield $generator->indent(function () use ($generator) {
             // Using prefixFirst and suffixLast
-            yield from $generator->prefixFirst(
-                '$result = ',
-                $generator->suffixLast(';', ['$this->calculate($data)']),
-            );
+            yield from $generator->prefixFirst('$result = ', $generator->suffixLast(';', ['$this->calculate($data)']));
             yield '';
 
             // Using wrap
-            yield from $generator->statement(
-                $generator->wrap('$wrapped = [', ['$result'], ']'),
-            );
+            yield from $generator->statement($generator->wrap('$wrapped = [', ['$result'], ']'));
             yield '';
 
             // Using maybeWrap with condition
-            yield from $generator->maybeWrap(true, 'if ($result) { ', [
-                '$this->save($result);',
-            ], ' }');
+            yield from $generator->maybeWrap(
+                true,
+                'if ($result) { ',
+                [
+                    '$this->save($result);',
+                ],
+                ' }',
+            );
             yield '';
 
             // Using allSuffix for array elements
             yield '$items = [';
-            yield $generator->indent(
-                $generator->allSuffix(',', [
-                    '\'first\'',
-                    '\'second\'',
-                    '\'third\'',
-                    '// Comment not suffixed',
-                ]),
-            );
+            yield $generator->indent($generator->allSuffix(',', [
+                '\'first\'',
+                '\'second\'',
+                '\'third\'',
+                '// Comment not suffixed',
+            ]));
             yield '];';
             yield '';
 
             // Using dumpFunctionCall
-            yield from $generator->statement(
-                $generator->dumpFunctionCall('array_map', [
-                    'fn($x) => $x * 2',
-                    '$items',
-                ]),
-            );
+            yield from $generator->statement($generator->dumpFunctionCall('array_map', [
+                'fn($x) => $x * 2',
+                '$items',
+            ]));
             yield '';
 
             // Using join
@@ -313,30 +316,24 @@ echo $generator->dumpFile(function () use ($generator) {
             yield '';
 
             // Using joinFirstPair
-            yield from $generator->statement(
-                $generator->joinFirstPair([
-                    '$prefix',
-                    ' = \'value\'',
-                    ' . \'suffix\'',
-                ]),
-            );
+            yield from $generator->statement($generator->joinFirstPair([
+                '$prefix',
+                ' = \'value\'',
+                ' . \'suffix\'',
+            ]));
             yield '';
 
             // Using suffixFirst
             yield 'foreach ($items as $item) {';
-            yield $generator->indent(
-                $generator->suffixFirst(':', [
-                    'echo $item',
-                    'echo PHP_EOL',
-                ]),
-            );
+            yield $generator->indent($generator->suffixFirst(':', [
+                'echo $item',
+                'echo PHP_EOL',
+            ]));
             yield '}';
             yield '';
 
             // Using new instance creation
-            yield from $generator->statement(
-                $generator->dumpCall(DateTime::class, '__construct', ['\'now\'']),
-            );
+            yield from $generator->statement($generator->dumpCall(DateTime::class, '__construct', ['\'now\'']));
             yield '';
 
             // Multi-line string with maybeNowDoc
@@ -345,10 +342,7 @@ echo $generator->dumpFile(function () use ($generator) {
             yield '';
 
             // Class reference
-            yield sprintf(
-                '$className = %s;',
-                $generator->dumpClassReference('Example\SomeClass'),
-            );
+            yield sprintf('$className = %s;', $generator->dumpClassReference('Example\SomeClass'));
             yield '';
         });
         yield '}';
@@ -386,10 +380,7 @@ echo $generator->dumpFile(function () use ($generator) {
     yield '';
 
     // Interface
-    yield sprintf(
-        'interface CustomInterface extends %s',
-        $generator->import('Example\Interfaces\BaseInterface'),
-    );
+    yield sprintf('interface CustomInterface extends %s', $generator->import('Example\Interfaces\BaseInterface'));
     yield '{';
     yield $generator->indent([
         'public function process(mixed $data): void;',
@@ -434,9 +425,7 @@ echo $generator->dumpFile(function () use ($generator) {
         yield '{';
         yield $generator->indent([
             'if ($this->createdAt === null) {',
-            $generator->indent(
-                $generator->statement(['$this->createdAt = new \\DateTimeImmutable()']),
-            ),
+            $generator->indent($generator->statement(['$this->createdAt = new \\DateTimeImmutable()'])),
             '}',
             '$this->updatedAt = new \\DateTimeImmutable();',
         ]);
@@ -465,11 +454,9 @@ echo $generator->dumpFile(function () use ($generator) {
     // Global function
     yield 'function helperFunction(string $input): string';
     yield '{';
-    yield $generator->indent(
-        $generator->statement([
-            'return strtoupper($input)',
-        ]),
-    );
+    yield $generator->indent($generator->statement([
+        'return strtoupper($input)',
+    ]));
     yield '}';
 });
 ```

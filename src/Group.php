@@ -23,26 +23,23 @@ final class Group
     /**
      * @param CodeLines $lines
      */
-    public function __construct(
-        array | Closure | Generator | string $lines,
-    ) {
+    public function __construct(array|Closure|Generator|string $lines)
+    {
         $this->lines = CodeGenerator::resolveIterable($lines);
     }
 
     /**
      * @param CodeLines $lines
      */
-    public static function indent(
-        array | Closure | Generator | string $lines,
-        int $indention = 1,
-    ) : self {
+    public static function indent(array|Closure|Generator|string $lines, int $indention = 1): self
+    {
         $group = new self($lines);
         $group->indention = $indention;
 
         return $group;
     }
 
-    public function isEmpty() : bool
+    public function isEmpty(): bool
     {
         return $this->lines === [];
     }

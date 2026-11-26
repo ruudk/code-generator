@@ -14,9 +14,8 @@ final readonly class ClassName implements Importable
      */
     public string $name;
 
-    public function __construct(
-        string $name,
-    ) {
+    public function __construct(string $name)
+    {
         $name = trim($name);
 
         if ($name === '') {
@@ -33,7 +32,7 @@ final readonly class ClassName implements Importable
     /**
      * @phpstan-return ($input is null ? null : self)
      */
-    public static function maybeFromString(null | Importable | self | string $input) : ?self
+    public static function maybeFromString(Importable|self|string|null $input): ?self
     {
         if ($input === null) {
             return null;
@@ -47,19 +46,19 @@ final readonly class ClassName implements Importable
     }
 
     #[Override]
-    public function __toString() : string
+    public function __toString(): string
     {
         return $this->name;
     }
 
     #[Override]
-    public function equals(object $other) : bool
+    public function equals(object $other): bool
     {
         return $other instanceof self && $this->name === $other->name;
     }
 
     #[Override]
-    public function compare(object $other) : int
+    public function compare(object $other): int
     {
         if ($other instanceof self) {
             return strcasecmp($this->name, $other->name);

@@ -20,9 +20,8 @@ final class CodeGenerator
     private array $imports = [];
     private readonly ?NamespaceName $namespace;
 
-    public function __construct(
-        null | NamespaceName | string $namespace = null,
-    ) {
+    public function __construct(NamespaceName|string|null $namespace = null)
+    {
         $this->namespace = NamespaceName::maybeFromString($namespace);
     }
 
@@ -30,12 +29,9 @@ final class CodeGenerator
      * Dumps the generated code with proper formatting (removes consecutive newlines, trims)
      * @param CodeLines $iterable
      */
-    public function dump(array | Closure | Generator | string $iterable) : string
+    public function dump(array|Closure|Generator|string $iterable): string
     {
-        $output = implode(
-            PHP_EOL,
-            self::resolveIterable($this->maybeIndent($iterable)),
-        );
+        $output = implode(PHP_EOL, self::resolveIterable($this->maybeIndent($iterable)));
 
         // Replace consecutive newlines with a single newline
         $output = preg_replace('/(\r?\n){3,}/', PHP_EOL . PHP_EOL, $output) ?? '';
@@ -47,7 +43,7 @@ final class CodeGenerator
      * Dumps a complete PHP file with opening tag, declare, namespace, and imports
      * @param CodeLines $iterable
      */
-    public function dumpFile(array | Closure | Generator | string $iterable) : string
+    public function dumpFile(array|Closure|Generator|string $iterable): string
     {
         $content = $this->dump(function () use ($iterable) {
             yield '<?php';
@@ -75,7 +71,7 @@ final class CodeGenerator
      * Generates sorted import statements for all registered imports
      * @return Generator<string>
      */
-    private function dumpImports() : Generator
+    private function dumpImports(): Generator
     {
         uasort($this->imports, fn($left, $right) => $left->compare($right));
 
@@ -107,7 +103,11 @@ final class CodeGenerator
             }
 
             // Skip if it's in the same namespace as the file
-            if ($import->namespace !== null && $this->namespace !== null && $import->namespace->equals($this->namespace)) {
+            if (
+                $import->namespace !== null
+                && $this->namespace !== null
+                && $import->namespace->equals($this->namespace)
+            ) {
                 continue;
             }
 
@@ -131,14 +131,14 @@ final class CodeGenerator
      * @return Generator<CodeLine>
      */
     public function maybeDump(
-        null | array | Closure | Generator | string $before,
-        array | Closure | Generator | string $data,
-        null | array | Closure | Generator | string $after,
-    ) : Generator {
+        array|Closure|Generator|string|null $before,
+        array|Closure|Generator|string $data,
+        array|Closure|Generator|string|null $after,
+    ): Generator {
         $hasContent = false;
 
         foreach (self::resolveIterable($data) as $item) {
-            if ( ! $hasContent) {
+            if (!$hasContent) {
                 $hasContent = true;
 
                 if ($before !== null) {
@@ -149,7 +149,7 @@ final class CodeGenerator
             yield $item;
         }
 
-        if ( ! $hasContent || $after === null) {
+        if (!$hasContent || $after === null) {
             return;
         }
 
@@ -159,11 +159,11 @@ final class CodeGenerator
     /**
      * Finds an available alias for a type, appending numbers if the alias is already taken
      */
-    private function findAvailableAlias(Importable $type, string $alias, int $i = 1) : string
+    private function findAvailableAlias(Importable $type, string $alias, int $i = 1): string
     {
         $aliasToCheck = $i === 1 ? $alias : sprintf('%s%d', $alias, $i);
 
-        if ( ! isset($this->imports[$aliasToCheck])) {
+        if (!isset($this->imports[$aliasToCheck])) {
             return $aliasToCheck;
         }
 
@@ -180,7 +180,7 @@ final class CodeGenerator
     /**
      * Imports an enum and returns the fully qualified reference to use in the generated code
      */
-    public function importEnum(UnitEnum $enum) : string
+    public function importEnum(UnitEnum $enum): string
     {
         return sprintf('%s::%s', $this->import($enum::class), $enum->name);
     }
@@ -188,7 +188,7 @@ final class CodeGenerator
     /**
      * Imports a class, namespace, or function and returns the alias to use in the generated code
      */
-    public function import(Importable | string $name) : string
+    public function import(Importable|string $name): string
     {
         if ($name instanceof FunctionName) {
             $alias = $this->findAvailableAlias($name, $name->shortName);
@@ -233,7 +233,7 @@ final class CodeGenerator
     /**
      * Imports a class by importing its parent namespace and returning the relative path
      */
-    public function importByParent(Importable | string $name) : string
+    public function importByParent(Importable|string $name): string
     {
         $fqcn = FullyQualified::maybeFromString($name);
 
@@ -266,10 +266,10 @@ final class CodeGenerator
      * @return Generator<CodeLine>
      */
     public function dumpAttribute(
-        FullyQualified | string $fqcn,
-        array | Closure | Generator | string $args = [],
+        FullyQualified|string $fqcn,
+        array|Closure|Generator|string $args = [],
         bool $addCommaAfterEachArgument = true,
-    ) : Generator {
+    ): Generator {
         $args = self::resolveIterable($args);
 
         if ($args === []) {
@@ -286,19 +286,16 @@ final class CodeGenerator
     /**
      * Generates a class reference string (e.g., Foo::class)
      */
-    public function dumpClassReference(FullyQualified | string $fqcn, bool $import = true, bool $byParent = false) : string
+    public function dumpClassReference(FullyQualified|string $fqcn, bool $import = true, bool $byParent = false): string
     {
         $fqcn = FullyQualified::maybeFromString($fqcn);
 
-        return sprintf(
-            '%s::class',
-            match (true) {
-                $import && $byParent => $this->importByParent($fqcn),
-                $import => $this->import($fqcn),
-                $this->namespace !== null => '\\' . $fqcn,
-                default => $fqcn,
-            },
-        );
+        return sprintf('%s::class', match (true) {
+            $import && $byParent => $this->importByParent($fqcn),
+            $import => $this->import($fqcn),
+            $this->namespace !== null => '\\' . $fqcn,
+            default => $fqcn,
+        });
     }
 
     /**
@@ -307,7 +304,7 @@ final class CodeGenerator
      * @param CodeLines $data
      * @return Generator<string>
      */
-    private function maybeIndent(array | Closure | Generator | string $data, int $level = 0) : Generator
+    private function maybeIndent(array|Closure|Generator|string $data, int $level = 0): Generator
     {
         foreach (self::resolveIterable($data) as $line) {
             if ($line instanceof Group) {
@@ -316,13 +313,10 @@ final class CodeGenerator
                 continue;
             }
 
-            $line = implode(
-                PHP_EOL,
-                array_map(
-                    fn($line) => str_repeat('    ', $level) . $line,
-                    explode(PHP_EOL, $line),
-                ),
-            );
+            $line = implode(PHP_EOL, array_map(
+                fn($line) => str_repeat('    ', $level) . $line,
+                explode(PHP_EOL, $line),
+            ));
 
             yield trim($line) === '' ? '' : $line;
         }
@@ -331,19 +325,16 @@ final class CodeGenerator
     /**
      * Formats a string as a nowdoc if it contains newlines, otherwise as a regular string
      */
-    public function maybeNowDoc(string $input, string $tag = 'EOD') : string
+    public function maybeNowDoc(string $input, string $tag = 'EOD'): string
     {
-        if ( ! str_contains($input, PHP_EOL)) {
+        if (!str_contains($input, PHP_EOL)) {
             return var_export($input, true);
         }
 
-        return sprintf("<<<'%s'\n%s", $tag, implode(
-            PHP_EOL,
-            array_map(
-                fn($line) => '    ' . $line,
-                [...explode(PHP_EOL, $input), $tag],
-            ),
-        ));
+        return sprintf("<<<'%s'\n%s", $tag, implode(PHP_EOL, array_map(fn($line) => '    ' . $line, [
+            ...explode(PHP_EOL, $input),
+            $tag,
+        ])));
     }
 
     /**
@@ -351,7 +342,7 @@ final class CodeGenerator
      * @param CodeLines $data
      * @return Generator<CodeLine>
      */
-    public function statement(array | Closure | Generator | string $data) : Generator
+    public function statement(array|Closure|Generator|string $data): Generator
     {
         yield from $this->suffixLast(';', $data);
     }
@@ -362,7 +353,7 @@ final class CodeGenerator
      * @param CodeLines $data
      * @return Generator<CodeLine>
      */
-    public function suffixLast(string $suffix, array | Closure | Generator | string $data) : Generator
+    public function suffixLast(string $suffix, array|Closure|Generator|string $data): Generator
     {
         foreach (self::resolveIterable($data) as $line) {
             if (isset($previousValue)) {
@@ -389,14 +380,14 @@ final class CodeGenerator
      * @param CodeLines $data
      * @return Generator<CodeLine>
      */
-    public function trim(array | Closure | Generator | string $data) : Generator
+    public function trim(array|Closure|Generator|string $data): Generator
     {
         $lines = self::resolveIterable($data);
 
         // Find first non-empty line
         $start = 0;
         foreach ($lines as $i => $line) {
-            if ( ! ($line instanceof Group) && trim($line) === '') {
+            if (!$line instanceof Group && trim($line) === '') {
                 ++$start;
             } else {
                 break;
@@ -406,7 +397,7 @@ final class CodeGenerator
         // Find last non-empty line
         $end = count($lines) - 1;
         for ($i = $end; $i >= $start; --$i) {
-            if ( ! ($lines[$i] instanceof Group) && trim($lines[$i]) === '') {
+            if (!$lines[$i] instanceof Group && trim($lines[$i]) === '') {
                 --$end;
             } else {
                 break;
@@ -424,7 +415,7 @@ final class CodeGenerator
      *
      * @param CodeLines $data
      */
-    public function indent(array | Closure | Generator | string $data, bool $trim = true, int $indention = 1) : Group
+    public function indent(array|Closure|Generator|string $data, bool $trim = true, int $indention = 1): Group
     {
         return Group::indent($trim ? $this->trim($data) : $data, $indention);
     }
@@ -435,12 +426,9 @@ final class CodeGenerator
      * @param CodeLines $data
      * @return Generator<CodeLine>
      */
-    public function wrap(string $prefix, array | Closure | Generator | string $data, ?string $suffix = null) : Generator
+    public function wrap(string $prefix, array|Closure|Generator|string $data, ?string $suffix = null): Generator
     {
-        yield from $this->prefixFirst(
-            $prefix,
-            $suffix !== null ? $this->suffixLast($suffix, $data) : $data,
-        );
+        yield from $this->prefixFirst($prefix, $suffix !== null ? $this->suffixLast($suffix, $data) : $data);
     }
 
     /**
@@ -448,8 +436,12 @@ final class CodeGenerator
      * @param CodeLines $data
      * @return Generator<CodeLine>
      */
-    public function maybeWrap(bool $condition, string $prefix, array | Closure | Generator | string $data, ?string $suffix = null) : Generator
-    {
+    public function maybeWrap(
+        bool $condition,
+        string $prefix,
+        array|Closure|Generator|string $data,
+        ?string $suffix = null,
+    ): Generator {
         $data = self::resolveIterable($data);
 
         if ($condition) {
@@ -465,7 +457,7 @@ final class CodeGenerator
      * @param CodeLines $data
      * @return Generator<CodeLine>
      */
-    public function prefixFirst(string $prefix, array | Closure | Generator | string $data) : Generator
+    public function prefixFirst(string $prefix, array|Closure|Generator|string $data): Generator
     {
         $first = true;
         foreach (self::resolveIterable($data) as $line) {
@@ -494,7 +486,7 @@ final class CodeGenerator
      *
      * @return Generator<string|Group>
      */
-    public function suffixFirst(string $suffix, array | Closure | Generator | string $data) : Generator
+    public function suffixFirst(string $suffix, array|Closure|Generator|string $data): Generator
     {
         $first = true;
         foreach (self::resolveIterable($data) as $line) {
@@ -521,7 +513,7 @@ final class CodeGenerator
      *
      * @param CodeLines $data
      */
-    public function join(string $delimiter, array | Closure | Generator | string $data) : string
+    public function join(string $delimiter, array|Closure|Generator|string $data): string
     {
         $resolved = [];
         foreach (self::resolveIterable($data) as $item) {
@@ -538,7 +530,7 @@ final class CodeGenerator
      *
      * @return Generator<string|Group>
      */
-    public function joinFirstPair(array | Closure | Generator | string $data) : Generator
+    public function joinFirstPair(array|Closure|Generator|string $data): Generator
     {
         $first = null;
         $i = 0;
@@ -588,7 +580,7 @@ final class CodeGenerator
      *
      * @return Generator<CodeLine>
      */
-    public function allSuffix(string $suffix, array | Closure | Generator | string $data) : Generator
+    public function allSuffix(string $suffix, array|Closure|Generator|string $data): Generator
     {
         foreach (self::resolveIterable($data) as $value) {
             if ($value instanceof Group) {
@@ -616,15 +608,15 @@ final class CodeGenerator
      * @return Generator<CodeLine>
      */
     public function dumpCall(
-        array | Closure | Generator | string $object,
+        array|Closure|Generator|string $object,
         string $method,
-        array | Closure | Generator | string $args = [],
+        array|Closure|Generator|string $args = [],
         bool $static = false,
         bool $addCommaAfterEachArgument = true,
-    ) : Generator {
+    ): Generator {
         $args = self::resolveIterable($args);
 
-        if ( ! is_string($object)) {
+        if (!is_string($object)) {
             yield from self::resolveIterable($object);
             yield Group::indent(function () use ($addCommaAfterEachArgument, $method, $args) {
                 if ($args === []) {
@@ -640,19 +632,21 @@ final class CodeGenerator
                 }
 
                 yield sprintf('->%s(', $method);
-                yield Group::indent($addCommaAfterEachArgument ? $this->allSuffix(',', $args) : $this->suffixLast(',', $args));
+                yield Group::indent(
+                    $addCommaAfterEachArgument ? $this->allSuffix(',', $args) : $this->suffixLast(',', $args),
+                );
                 yield ')';
             });
 
             return;
         }
 
-        if (($static && $method !== '__construct') || ( ! $static && $method === '__construct')) {
+        if ($static && $method !== '__construct' || !$static && $method === '__construct') {
             $object = $this->import($object);
         }
 
         $call = match (true) {
-            ! $static && $method === '__construct' => sprintf('new %s', $object),
+            !$static && $method === '__construct' => sprintf('new %s', $object),
             default => sprintf('%s%s%s', $object, $static ? '::' : '->', $method),
         };
 
@@ -680,7 +674,7 @@ final class CodeGenerator
      *
      * @return Generator<CodeLine>
      */
-    public function dumpFunctionCall(string $function, array | Closure | Generator | string $args = []) : Generator
+    public function dumpFunctionCall(string $function, array|Closure|Generator|string $args = []): Generator
     {
         $args = self::resolveIterable($args);
 
@@ -691,13 +685,7 @@ final class CodeGenerator
         }
 
         if (count($args) === 1) {
-            yield from $this->prefixFirst(
-                sprintf('%s(', $function),
-                $this->suffixLast(
-                    ')',
-                    $args,
-                ),
-            );
+            yield from $this->prefixFirst(sprintf('%s(', $function), $this->suffixLast(')', $args));
 
             return;
         }
@@ -713,7 +701,7 @@ final class CodeGenerator
      *
      * @return ($iterable is iterable<string> ? array<string> : array<CodeLine>)
      */
-    public static function resolveIterable(array | Closure | Generator | string $iterable) : array
+    public static function resolveIterable(array|Closure|Generator|string $iterable): array
     {
         if (is_callable($iterable)) {
             $iterable = $iterable();
@@ -741,7 +729,7 @@ final class CodeGenerator
      * @param CodeLines $data
      * @return Generator<string|Group>
      */
-    public function prefix(string $prefix, array | Closure | Generator | string $data) : Generator
+    public function prefix(string $prefix, array|Closure|Generator|string $data): Generator
     {
         foreach (CodeGenerator::resolveIterable($data) as $line) {
             if ($line instanceof Group) {
@@ -762,7 +750,7 @@ final class CodeGenerator
      * @param CodeLines $data
      * @return Generator<string|Group>
      */
-    public function comment(array | Closure | Generator | string $data) : Generator
+    public function comment(array|Closure|Generator|string $data): Generator
     {
         yield from $this->prefix('// ', $data);
     }
@@ -773,7 +761,7 @@ final class CodeGenerator
      * @param CodeLines $data
      * @return Generator<string|Group>
      */
-    public function blockComment(array | Closure | Generator | string $data) : Generator
+    public function blockComment(array|Closure|Generator|string $data): Generator
     {
         yield from $this->maybeDump('/*', $this->prefix(' * ', $data), ' */');
     }
@@ -784,7 +772,7 @@ final class CodeGenerator
      * @param CodeLines $data
      * @return Generator<string|Group>
      */
-    public function docComment(array | Closure | Generator | string $data) : Generator
+    public function docComment(array|Closure|Generator|string $data): Generator
     {
         yield from $this->maybeDump('/**', $this->prefix(' * ', $data), ' */');
     }

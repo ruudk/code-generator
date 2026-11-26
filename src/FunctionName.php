@@ -22,9 +22,8 @@ final class FunctionName implements Importable
         }
     }
 
-    public function __construct(
-        string $name,
-    ) {
+    public function __construct(string $name)
+    {
         $name = trim($name);
 
         if ($name === '') {
@@ -37,7 +36,7 @@ final class FunctionName implements Importable
     /**
      * @phpstan-return ($input is null ? null : self)
      */
-    public static function maybeFromString(null | Importable | self | string $input) : ?self
+    public static function maybeFromString(Importable|self|string|null $input): ?self
     {
         if ($input === null) {
             return null;
@@ -51,19 +50,19 @@ final class FunctionName implements Importable
     }
 
     #[Override]
-    public function __toString() : string
+    public function __toString(): string
     {
         return 'function ' . $this->name;
     }
 
     #[Override]
-    public function equals(object $other) : bool
+    public function equals(object $other): bool
     {
         return $other instanceof self && (string) $this === (string) $other;
     }
 
     #[Override]
-    public function compare(object $other) : int
+    public function compare(object $other): int
     {
         $thisStr = str_replace('\\', ' ', $this->name);
 

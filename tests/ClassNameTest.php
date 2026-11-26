@@ -9,7 +9,7 @@ use PHPUnit\Framework\TestCase;
 
 final class ClassNameTest extends TestCase
 {
-    public function testValidClassName() : void
+    public function testValidClassName(): void
     {
         $className = new ClassName('MyClass');
 
@@ -17,7 +17,7 @@ final class ClassNameTest extends TestCase
         self::assertSame('MyClass', (string) $className);
     }
 
-    public function testClassNameWithWhitespace() : void
+    public function testClassNameWithWhitespace(): void
     {
         $className = new ClassName('  MyClass  ');
 
@@ -25,7 +25,7 @@ final class ClassNameTest extends TestCase
         self::assertSame('MyClass', (string) $className);
     }
 
-    public function testThrowsExceptionForEmptyClassName() : void
+    public function testThrowsExceptionForEmptyClassName(): void
     {
         $this->expectException(InvalidArgumentException::class);
         $this->expectExceptionMessage('Class name cannot be empty');
@@ -33,7 +33,7 @@ final class ClassNameTest extends TestCase
         new ClassName('');
     }
 
-    public function testThrowsExceptionForWhitespaceOnlyClassName() : void
+    public function testThrowsExceptionForWhitespaceOnlyClassName(): void
     {
         $this->expectException(InvalidArgumentException::class);
         $this->expectExceptionMessage('Class name cannot be empty');
@@ -41,7 +41,7 @@ final class ClassNameTest extends TestCase
         new ClassName('   ');
     }
 
-    public function testThrowsExceptionForClassNameWithNamespaceSeparator() : void
+    public function testThrowsExceptionForClassNameWithNamespaceSeparator(): void
     {
         $this->expectException(InvalidArgumentException::class);
         $this->expectExceptionMessage('Class name cannot contain namespace separator');
@@ -49,7 +49,7 @@ final class ClassNameTest extends TestCase
         new ClassName('My\\Class');
     }
 
-    public function testThrowsExceptionForClassNameWithLeadingBackslash() : void
+    public function testThrowsExceptionForClassNameWithLeadingBackslash(): void
     {
         $this->expectException(InvalidArgumentException::class);
         $this->expectExceptionMessage('Class name cannot contain namespace separator');
@@ -57,7 +57,7 @@ final class ClassNameTest extends TestCase
         new ClassName('\\MyClass');
     }
 
-    public function testThrowsExceptionForClassNameWithTrailingBackslash() : void
+    public function testThrowsExceptionForClassNameWithTrailingBackslash(): void
     {
         $this->expectException(InvalidArgumentException::class);
         $this->expectExceptionMessage('Class name cannot contain namespace separator');

@@ -10,7 +10,7 @@ use PHPUnit\Framework\TestCase;
 #[CoversClass(Group::class)]
 final class GroupTest extends TestCase
 {
-    public function testConstructorWithString() : void
+    public function testConstructorWithString(): void
     {
         $group = new Group('test line');
 
@@ -18,7 +18,7 @@ final class GroupTest extends TestCase
         self::assertSame(0, $group->indention);
     }
 
-    public function testConstructorWithArray() : void
+    public function testConstructorWithArray(): void
     {
         $lines = ['line 1', 'line 2', 'line 3'];
         $group = new Group($lines);
@@ -27,7 +27,7 @@ final class GroupTest extends TestCase
         self::assertSame(0, $group->indention);
     }
 
-    public function testConstructorWithCallable() : void
+    public function testConstructorWithCallable(): void
     {
         $callable = function () {
             yield 'line 1';
@@ -40,7 +40,7 @@ final class GroupTest extends TestCase
         self::assertSame(0, $group->indention);
     }
 
-    public function testConstructorWithNestedGroups() : void
+    public function testConstructorWithNestedGroups(): void
     {
         $nestedGroup = new Group('nested line');
         $lines = ['line 1', $nestedGroup, 'line 2'];
@@ -49,7 +49,7 @@ final class GroupTest extends TestCase
         self::assertSame($lines, $group->lines);
     }
 
-    public function testConstructorWithGenerator() : void
+    public function testConstructorWithGenerator(): void
     {
         $generator = function () {
             yield 'line 1';
@@ -62,7 +62,7 @@ final class GroupTest extends TestCase
         self::assertSame(['line 1', 'line 2', 'line 3'], $group->lines);
     }
 
-    public function testIndentStaticMethodWithString() : void
+    public function testIndentStaticMethodWithString(): void
     {
         $group = Group::indent('indented line', 2);
 
@@ -70,7 +70,7 @@ final class GroupTest extends TestCase
         self::assertSame(2, $group->indention);
     }
 
-    public function testIndentStaticMethodWithArray() : void
+    public function testIndentStaticMethodWithArray(): void
     {
         $lines = ['line 1', 'line 2'];
         $group = Group::indent($lines, 3);
@@ -79,7 +79,7 @@ final class GroupTest extends TestCase
         self::assertSame(3, $group->indention);
     }
 
-    public function testIndentStaticMethodWithCallable() : void
+    public function testIndentStaticMethodWithCallable(): void
     {
         $callable = function () {
             yield 'indented 1';
@@ -92,7 +92,7 @@ final class GroupTest extends TestCase
         self::assertSame(4, $group->indention);
     }
 
-    public function testIndentStaticMethodWithZeroIndentation() : void
+    public function testIndentStaticMethodWithZeroIndentation(): void
     {
         $group = Group::indent('no indent', 0);
 
@@ -100,7 +100,7 @@ final class GroupTest extends TestCase
         self::assertSame(0, $group->indention);
     }
 
-    public function testIndentStaticMethodWithNegativeIndentation() : void
+    public function testIndentStaticMethodWithNegativeIndentation(): void
     {
         $group = Group::indent('negative indent', -1);
 
@@ -108,14 +108,14 @@ final class GroupTest extends TestCase
         self::assertSame(-1, $group->indention);
     }
 
-    public function testIsEmptyWithEmptyArray() : void
+    public function testIsEmptyWithEmptyArray(): void
     {
         $group = new Group([]);
 
         self::assertTrue($group->isEmpty());
     }
 
-    public function testIsEmptyWithEmptyCallable() : void
+    public function testIsEmptyWithEmptyCallable(): void
     {
         $callable = function () {
             yield from [];
@@ -126,28 +126,28 @@ final class GroupTest extends TestCase
         self::assertTrue($group->isEmpty());
     }
 
-    public function testIsEmptyWithNonEmptyString() : void
+    public function testIsEmptyWithNonEmptyString(): void
     {
         $group = new Group('not empty');
 
         self::assertFalse($group->isEmpty());
     }
 
-    public function testIsEmptyWithNonEmptyArray() : void
+    public function testIsEmptyWithNonEmptyArray(): void
     {
         $group = new Group(['line']);
 
         self::assertFalse($group->isEmpty());
     }
 
-    public function testIsEmptyWithEmptyStringInArray() : void
+    public function testIsEmptyWithEmptyStringInArray(): void
     {
         $group = new Group(['']);
 
         self::assertFalse($group->isEmpty());
     }
 
-    public function testComplexNestedStructure() : void
+    public function testComplexNestedStructure(): void
     {
         $innerGroup = Group::indent(['inner line 1', 'inner line 2'], 2);
         $middleGroup = new Group(['middle line', $innerGroup]);
@@ -168,7 +168,7 @@ final class GroupTest extends TestCase
         self::assertSame(['inner line 1', 'inner line 2'], $innerGroupFromMiddle->lines);
     }
 
-    public function testMixedContentTypes() : void
+    public function testMixedContentTypes(): void
     {
         $nestedGroup = new Group('nested');
         $callable = function () use ($nestedGroup) {

@@ -14,10 +14,10 @@ interface Importable extends Stringable
     /**
      * Check if this importable is equal to another object
      */
-    public function equals(object $other) : bool;
+    public function equals(object $other): bool;
 
     /**
      * Compare this importable with another object for sorting
      */
-    public function compare(object $other) : int;
+    public function compare(object $other): int;
 }

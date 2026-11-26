@@ -9,7 +9,7 @@ use PHPUnit\Framework\TestCase;
 
 final class NamespaceNameTest extends TestCase
 {
-    public function testSingleNamespacePart() : void
+    public function testSingleNamespacePart(): void
     {
         $namespace = new NamespaceName('App');
 
@@ -17,7 +17,7 @@ final class NamespaceNameTest extends TestCase
         self::assertSame('App', (string) $namespace);
     }
 
-    public function testMultipleNamespaceParts() : void
+    public function testMultipleNamespaceParts(): void
     {
         $namespace = new NamespaceName('App', 'Models', 'User');
 
@@ -25,7 +25,7 @@ final class NamespaceNameTest extends TestCase
         self::assertSame('App\\Models\\User', (string) $namespace);
     }
 
-    public function testNamespaceWithBackslashInParts() : void
+    public function testNamespaceWithBackslashInParts(): void
     {
         $namespace = new NamespaceName('App\\Models', 'User');
 
@@ -33,7 +33,7 @@ final class NamespaceNameTest extends TestCase
         self::assertSame('App\\Models\\User', (string) $namespace);
     }
 
-    public function testFullNamespaceAsOnePart() : void
+    public function testFullNamespaceAsOnePart(): void
     {
         $namespace = new NamespaceName('App\\Models\\User');
 
@@ -41,7 +41,7 @@ final class NamespaceNameTest extends TestCase
         self::assertSame('App\\Models\\User', (string) $namespace);
     }
 
-    public function testMixedBackslashesAndSeparateParts() : void
+    public function testMixedBackslashesAndSeparateParts(): void
     {
         $namespace = new NamespaceName('App', 'Models\\Entity', 'User');
 
@@ -49,7 +49,7 @@ final class NamespaceNameTest extends TestCase
         self::assertSame('App\\Models\\Entity\\User', (string) $namespace);
     }
 
-    public function testEmptyPartsAreFiltered() : void
+    public function testEmptyPartsAreFiltered(): void
     {
         $namespace = new NamespaceName('App\\\\Models\\', '\\User');
 
@@ -57,7 +57,7 @@ final class NamespaceNameTest extends TestCase
         self::assertSame('App\\Models\\User', (string) $namespace);
     }
 
-    public function testLeadingBackslashIsFiltered() : void
+    public function testLeadingBackslashIsFiltered(): void
     {
         $namespace = new NamespaceName('\\App\\Models\\User');
 
@@ -65,7 +65,7 @@ final class NamespaceNameTest extends TestCase
         self::assertSame('App\\Models\\User', (string) $namespace);
     }
 
-    public function testTrailingBackslashIsRemoved() : void
+    public function testTrailingBackslashIsRemoved(): void
     {
         $namespace = new NamespaceName('App\\Models\\User\\');
 
@@ -73,7 +73,7 @@ final class NamespaceNameTest extends TestCase
         self::assertSame('App\\Models\\User', (string) $namespace);
     }
 
-    public function testThrowsExceptionForEmptyParts() : void
+    public function testThrowsExceptionForEmptyParts(): void
     {
         $this->expectException(InvalidArgumentException::class);
         $this->expectExceptionMessage('At least one non-empty part is required');
@@ -81,7 +81,7 @@ final class NamespaceNameTest extends TestCase
         new NamespaceName('', '\\\\', '');
     }
 
-    public function testThrowsExceptionForOnlyBackslashes() : void
+    public function testThrowsExceptionForOnlyBackslashes(): void
     {
         $this->expectException(InvalidArgumentException::class);
         $this->expectExceptionMessage('At least one non-empty part is required');
@@ -89,7 +89,7 @@ final class NamespaceNameTest extends TestCase
         new NamespaceName('\\\\\\');
     }
 
-    public function testLastPart() : void
+    public function testLastPart(): void
     {
         $namespace1 = new NamespaceName('App');
         self::assertSame('App', $namespace1->lastPart);
@@ -101,7 +101,7 @@ final class NamespaceNameTest extends TestCase
         self::assertSame('User', $namespace3->lastPart);
     }
 
-    public function testIsSubNamespaceOf() : void
+    public function testIsSubNamespaceOf(): void
     {
         $parent = new NamespaceName('App');
         $child = new NamespaceName('App\\Models');
@@ -119,7 +119,7 @@ final class NamespaceNameTest extends TestCase
         self::assertFalse($parent->isSubNamespaceOf($parent)); // Not a sub of itself
     }
 
-    public function testIsDirectChildOf() : void
+    public function testIsDirectChildOf(): void
     {
         $parent = new NamespaceName('App');
         $directChild = new NamespaceName('App\\Models');
@@ -136,7 +136,7 @@ final class NamespaceNameTest extends TestCase
         self::assertFalse($parent->isDirectChildOf($parent)); // Not a child of itself
     }
 
-    public function testGetRelativePathFrom() : void
+    public function testGetRelativePathFrom(): void
     {
         $parent = new NamespaceName('App');
         $child = new NamespaceName('App\\Models');
@@ -152,7 +152,7 @@ final class NamespaceNameTest extends TestCase
         self::assertSame('App', $parent->getRelativePathFrom($child));
     }
 
-    public function testWith() : void
+    public function testWith(): void
     {
         $namespace = new NamespaceName('App');
         $extended = $namespace->with('Models');
@@ -163,7 +163,7 @@ final class NamespaceNameTest extends TestCase
         self::assertSame('App\\Models\\User\\Profile', $further->namespace);
     }
 
-    public function testEquals() : void
+    public function testEquals(): void
     {
         $namespace1 = new NamespaceName('App\\Models');
         $namespace2 = new NamespaceName('App', 'Models');

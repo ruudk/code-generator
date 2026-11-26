@@ -12,18 +12,10 @@ final readonly class FullyQualified implements Importable
     public ClassName $className;
     public ?NamespaceName $namespace;
 
-    public function __construct(
-        Importable | string $part,
-        Importable | string ...$parts,
-    ) {
+    public function __construct(Importable|string $part, Importable|string ...$parts)
+    {
         $flattened = array_filter(
-            explode(
-                '\\',
-                implode(
-                    '\\',
-                    array_map(strval(...), [$part, ...$parts]),
-                ),
-            ),
+            explode('\\', implode('\\', array_map(strval(...), [$part, ...$parts]))),
             fn($p) => $p !== '',
         );
 
@@ -40,7 +32,7 @@ final readonly class FullyQualified implements Importable
     /**
      * @phpstan-return ($input is null ? null : self)
      */
-    public static function maybeFromString(null | Importable | self | string $input) : ?self
+    public static function maybeFromString(Importable|self|string|null $input): ?self
     {
         if ($input === null) {
             return null;
@@ -56,7 +48,7 @@ final readonly class FullyQualified implements Importable
     /**
      * Check if this class is in the given namespace
      */
-    public function isInNamespace(?NamespaceName $namespace) : bool
+    public function isInNamespace(?NamespaceName $namespace): bool
     {
         if ($namespace === null || $this->namespace === null) {
             return $namespace === null && $this->namespace === null;
@@ -68,7 +60,7 @@ final readonly class FullyQualified implements Importable
     /**
      * Get the relative path from a parent namespace with the class name
      */
-    public function getRelativePathFrom(?NamespaceName $parent) : string
+    public function getRelativePathFrom(?NamespaceName $parent): string
     {
         // If no parent namespace given, return full path
         if ($parent === null) {
@@ -93,7 +85,7 @@ final readonly class FullyQualified implements Importable
     }
 
     #[Override]
-    public function __toString() : string
+    public function __toString(): string
     {
         if ($this->namespace === null) {
             return (string) $this->className;
@@ -103,13 +95,13 @@ final readonly class FullyQualified implements Importable
     }
 
     #[Override]
-    public function equals(object $other) : bool
+    public function equals(object $other): bool
     {
         return $other instanceof self && (string) $this === (string) $other;
     }
 
     #[Override]
-    public function compare(object $other) : int
+    public function compare(object $other): int
     {
         $thisStr = str_replace('\\', ' ', (string) $this);
 
