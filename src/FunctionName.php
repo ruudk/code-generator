@@ -18,7 +18,7 @@ final class FunctionName implements Importable
         get {
             $parts = explode('\\', $this->name);
 
-            return (string) array_pop($parts);
+            return array_pop($parts);
         }
     }
 
@@ -64,16 +64,16 @@ final class FunctionName implements Importable
     #[Override]
     public function compare(object $other): int
     {
-        $thisStr = str_replace('\\', ' ', $this->name);
+        $thisStr = str_replace(search: '\\', replace: ' ', subject: $this->name);
 
         if ($other instanceof self) {
-            $otherStr = str_replace('\\', ' ', $other->name);
+            $otherStr = str_replace(search: '\\', replace: ' ', subject: $other->name);
 
             return strcasecmp($thisStr, $otherStr);
         }
 
         if ($other instanceof FullyQualified || $other instanceof NamespaceName) {
-            $otherStr = str_replace('\\', ' ', (string) $other);
+            $otherStr = str_replace(search: '\\', replace: ' ', subject: (string) $other);
 
             return strcasecmp($thisStr, $otherStr);
         }

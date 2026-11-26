@@ -16,7 +16,7 @@ final readonly class FullyQualified implements Importable
     {
         $flattened = array_filter(
             explode('\\', implode('\\', array_map(strval(...), [$part, ...$parts]))),
-            fn($p) => $p !== '',
+            static fn($p) => $p !== '',
         );
 
         if ($flattened === []) {
@@ -77,7 +77,7 @@ final readonly class FullyQualified implements Importable
         }
 
         if ($this->namespace->isSubNamespaceOf($parent)) {
-            return $this->namespace->getRelativePathFrom($parent) . '\\' . $this->className;
+            return $this->namespace->getRelativePathFrom($parent) . '\\' . $this->className->name;
         }
 
         // Not in a sub-namespace, return full path
@@ -91,7 +91,7 @@ final readonly class FullyQualified implements Importable
             return (string) $this->className;
         }
 
-        return $this->namespace . '\\' . $this->className;
+        return (string) $this->namespace . '\\' . $this->className->name;
     }
 
     #[Override]
@@ -103,16 +103,16 @@ final readonly class FullyQualified implements Importable
     #[Override]
     public function compare(object $other): int
     {
-        $thisStr = str_replace('\\', ' ', (string) $this);
+        $thisStr = str_replace(search: '\\', replace: ' ', subject: (string) $this);
 
         if ($other instanceof self || $other instanceof NamespaceName) {
-            $otherStr = str_replace('\\', ' ', (string) $other);
+            $otherStr = str_replace(search: '\\', replace: ' ', subject: (string) $other);
 
             return strcasecmp($thisStr, $otherStr);
         }
 
         if ($other instanceof FunctionName) {
-            $otherStr = str_replace('\\', ' ', $other->name);
+            $otherStr = str_replace(search: '\\', replace: ' ', subject: $other->name);
 
             return strcasecmp($thisStr, $otherStr);
         }

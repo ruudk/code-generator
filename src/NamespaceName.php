@@ -21,19 +21,22 @@ final class NamespaceName implements Importable
         get {
             $parts = explode('\\', $this->namespace);
 
-            return (string) array_pop($parts);
+            return array_pop($parts);
         }
     }
 
     public function __construct(string $part, string ...$parts)
     {
-        $flattened = array_filter(explode('\\', implode('\\', [$part, ...$parts])), fn($p) => $p !== '');
+        $flattened = array_filter(explode('\\', implode('\\', [$part, ...$parts])), static fn($p) => $p !== '');
 
         if ($flattened === []) {
             throw new InvalidArgumentException('At least one non-empty part is required');
         }
 
-        $this->namespace = implode('\\', $flattened);
+        /** @var non-empty-string $namespace */
+        $namespace = implode('\\', $flattened);
+
+        $this->namespace = $namespace;
     }
 
     /**
@@ -109,16 +112,16 @@ final class NamespaceName implements Importable
     #[Override]
     public function compare(object $other): int
     {
-        $thisStr = str_replace('\\', ' ', $this->namespace);
+        $thisStr = str_replace(search: '\\', replace: ' ', subject: $this->namespace);
 
         if ($other instanceof self || $other instanceof FullyQualified) {
-            $otherStr = str_replace('\\', ' ', (string) $other);
+            $otherStr = str_replace(search: '\\', replace: ' ', subject: (string) $other);
 
             return strcasecmp($thisStr, $otherStr);
         }
 
         if ($other instanceof FunctionName) {
-            $otherStr = str_replace('\\', ' ', $other->name);
+            $otherStr = str_replace(search: '\\', replace: ' ', subject: $other->name);
 
             return strcasecmp($thisStr, $otherStr);
         }

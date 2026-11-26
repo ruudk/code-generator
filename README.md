@@ -183,7 +183,6 @@ final readonly class Demo extends Parent
 declare(strict_types=1);
 
 use Ruudk\CodeGenerator\CodeGenerator;
-use Ruudk\CodeGenerator\Group;
 
 include 'vendor/autoload.php';
 
