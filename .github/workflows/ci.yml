@@ -52,11 +52,14 @@ jobs:
       - name: Check dependencies
         run: vendor/bin/composer-dependency-analyser
 
-      - name: Run PHP CS Fixer
-        run: vendor/bin/php-cs-fixer check --diff
+      - name: Check formatting
+        run: vendor/bin/mago format --check
 
-      - name: Run PHPStan
-        run: vendor/bin/phpstan analyse
+      - name: Run Mago linter
+        run: vendor/bin/mago lint
+
+      - name: Run Mago analyzer
+        run: vendor/bin/mago analyze
 
       - name: Run tests
         run: vendor/bin/phpunit

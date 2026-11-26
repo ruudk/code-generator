@@ -17,16 +17,11 @@
         "php": "^8.5"
     },
     "require-dev": {
+        "carthage-software/mago": "^1.61",
         "ergebnis/composer-normalize": "^2.47",
-        "friendsofphp/php-cs-fixer": "^3.85",
-        "phpstan/extension-installer": "^1.4",
-        "phpstan/phpstan": "^2.1",
-        "phpstan/phpstan-phpunit": "^2.0",
         "phpunit/phpunit": "^12.3",
         "ruudk/readme-examples-sync-hook": "^2.0",
-        "shipmonk/composer-dependency-analyser": "^1.8",
-        "ticketswap/php-cs-fixer-config": "^1.0",
-        "ticketswap/phpstan-error-formatter": "^1.1"
+        "shipmonk/composer-dependency-analyser": "^1.8"
     },
     "autoload": {
         "psr-4": {
@@ -40,8 +35,7 @@
     },
     "config": {
         "allow-plugins": {
-            "ergebnis/composer-normalize": true,
-            "phpstan/extension-installer": true
+            "ergebnis/composer-normalize": true
         }
     },
     "scripts": {
