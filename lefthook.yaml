@@ -36,16 +36,22 @@ pre-commit:
                 - "composer.lock"
             run: vendor/bin/composer-dependency-analyser
 
-        php-cs-fixer:
+        mago-format:
             glob: "*.php"
-            run: vendor/bin/php-cs-fixer fix --config .php-cs-fixer.php -- {staged_files}
+            run: vendor/bin/mago format -- {staged_files}
             stage_fixed: true
 
-        phpstan:
+        mago-lint:
             glob:
                 - "*.php"
-                - "*.neon"
-            run: vendor/bin/phpstan
+                - "mago.toml"
+            run: vendor/bin/mago lint
+
+        mago-analyze:
+            glob:
+                - "*.php"
+                - "mago.toml"
+            run: vendor/bin/mago analyze
 
         phpunit:
             glob: "*.php"

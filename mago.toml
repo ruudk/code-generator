@@ -1,0 +1,25 @@
+php-version = "8.5.0"
+
+[source]
+paths = ["examples", "src", "tests", "composer-dependency-analyser.php"]
+includes = ["vendor"]
+
+[formatter]
+print-width = 120
+
+[linter]
+integrations = ["phpunit"]
+
+[linter.rules]
+assertion-style = { style = "self" }
+no-isset = { allow-array-checks = true }
+no-else-clause = { enabled = false }
+
+# The public API takes boolean flags; changing that would be a BC break.
+no-boolean-flag-parameter = { enabled = false }
+
+# CodeGenerator is a single entry point with many small helpers by design.
+too-many-methods = { enabled = false }
+cyclomatic-complexity = { enabled = false }
+halstead = { enabled = false }
+kan-defect = { enabled = false }

@@ -6,6 +6,5 @@
 /composer.json
 /composer.lock export-ignore
 /composer-dependency-analyser.php export-ignore
-/phpstan.neon export-ignore
-/phpstan.php export-ignore
+/mago.toml export-ignore
 /phpunit.xml export-ignore
