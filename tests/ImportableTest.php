@@ -8,7 +8,7 @@ use PHPUnit\Framework\TestCase;
 
 final class ImportableTest extends TestCase
 {
-    public function testImportableInterfaceBasicUsage() : void
+    public function testImportableInterfaceBasicUsage(): void
     {
         $className = new ClassName('MyClass');
         $fullyQualified = new FullyQualified('App\\Models\\User');
@@ -28,7 +28,7 @@ final class ImportableTest extends TestCase
         }
     }
 
-    public function testFullyQualifiedMaybeFromStringWithImportable() : void
+    public function testFullyQualifiedMaybeFromStringWithImportable(): void
     {
         $className = new ClassName('MyClass');
         $functionName = new FunctionName('App\\Helpers\\format');
@@ -48,7 +48,7 @@ final class ImportableTest extends TestCase
         self::assertSame('App\\Models', (string) $result3);
     }
 
-    public function testClassNameMaybeFromStringWithImportable() : void
+    public function testClassNameMaybeFromStringWithImportable(): void
     {
         $fullyQualified = new FullyQualified('User'); // No namespace, just class name
         $namespaceName = new NamespaceName('Models');
@@ -62,7 +62,7 @@ final class ImportableTest extends TestCase
         self::assertSame('Models', $result2->name);
     }
 
-    public function testFunctionNameMaybeFromStringWithImportable() : void
+    public function testFunctionNameMaybeFromStringWithImportable(): void
     {
         $fullyQualified = new FullyQualified('App\\Helpers\\format');
         $namespaceName = new NamespaceName('App\\Helpers');
@@ -76,7 +76,7 @@ final class ImportableTest extends TestCase
         self::assertSame('function App\\Helpers', (string) $result2);
     }
 
-    public function testNamespaceNameMaybeFromStringWithImportable() : void
+    public function testNamespaceNameMaybeFromStringWithImportable(): void
     {
         $fullyQualified = new FullyQualified('App\\Models\\User');
         $className = new ClassName('Helper');
@@ -90,7 +90,7 @@ final class ImportableTest extends TestCase
         self::assertSame('Helper', $result2->namespace);
     }
 
-    public function testCodeGeneratorImportWithImportableTypes() : void
+    public function testCodeGeneratorImportWithImportableTypes(): void
     {
         $generator = new CodeGenerator('App\\Controllers');
 
@@ -111,7 +111,7 @@ final class ImportableTest extends TestCase
         self::assertSame('Services', $alias4);
     }
 
-    public function testCodeGeneratorImportByParentWithImportableTypes() : void
+    public function testCodeGeneratorImportByParentWithImportableTypes(): void
     {
         $generator = new CodeGenerator('App\\Controllers');
 
@@ -126,7 +126,7 @@ final class ImportableTest extends TestCase
         self::assertSame('Helper', $result2);
     }
 
-    public function testAliasConstructorWithImportableTypes() : void
+    public function testAliasConstructorWithImportableTypes(): void
     {
         $fullyQualified = new FullyQualified('App\\Models\\User');
         $functionName = new FunctionName('App\\Helpers\\format');

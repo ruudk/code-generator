@@ -9,7 +9,7 @@ use PHPUnit\Framework\TestCase;
 
 final class FullyQualifiedTest extends TestCase
 {
-    public function testSingleClassName() : void
+    public function testSingleClassName(): void
     {
         $fqcn = new FullyQualified('MyClass');
 
@@ -18,7 +18,7 @@ final class FullyQualifiedTest extends TestCase
         self::assertSame('MyClass', (string) $fqcn);
     }
 
-    public function testClassWithNamespace() : void
+    public function testClassWithNamespace(): void
     {
         $fqcn = new FullyQualified('App', 'Models', 'User');
 
@@ -27,7 +27,7 @@ final class FullyQualifiedTest extends TestCase
         self::assertSame('App\\Models\\User', (string) $fqcn);
     }
 
-    public function testClassWithBackslashInParts() : void
+    public function testClassWithBackslashInParts(): void
     {
         $fqcn = new FullyQualified('App\\Models', 'User');
 
@@ -36,7 +36,7 @@ final class FullyQualifiedTest extends TestCase
         self::assertSame('App\\Models\\User', (string) $fqcn);
     }
 
-    public function testFullyQualifiedStringAsOnePart() : void
+    public function testFullyQualifiedStringAsOnePart(): void
     {
         $fqcn = new FullyQualified('App\\Models\\User');
 
@@ -45,7 +45,7 @@ final class FullyQualifiedTest extends TestCase
         self::assertSame('App\\Models\\User', (string) $fqcn);
     }
 
-    public function testMixedBackslashesAndSeparateParts() : void
+    public function testMixedBackslashesAndSeparateParts(): void
     {
         $fqcn = new FullyQualified('App', 'Models\\Entity', 'User');
 
@@ -54,7 +54,7 @@ final class FullyQualifiedTest extends TestCase
         self::assertSame('App\\Models\\Entity\\User', (string) $fqcn);
     }
 
-    public function testEmptyPartsAreFiltered() : void
+    public function testEmptyPartsAreFiltered(): void
     {
         $fqcn = new FullyQualified('App\\\\Models\\', '\\User');
 
@@ -63,7 +63,7 @@ final class FullyQualifiedTest extends TestCase
         self::assertSame('App\\Models\\User', (string) $fqcn);
     }
 
-    public function testThrowsExceptionForEmptyParts() : void
+    public function testThrowsExceptionForEmptyParts(): void
     {
         $this->expectException(InvalidArgumentException::class);
         $this->expectExceptionMessage('At least one non-empty part is required');
@@ -71,7 +71,7 @@ final class FullyQualifiedTest extends TestCase
         new FullyQualified('', '\\\\', '');
     }
 
-    public function testLeadingBackslash() : void
+    public function testLeadingBackslash(): void
     {
         $fqcn = new FullyQualified('\\App\\Models\\User');
 
@@ -80,7 +80,7 @@ final class FullyQualifiedTest extends TestCase
         self::assertSame('App\\Models\\User', (string) $fqcn);
     }
 
-    public function testIsInNamespace() : void
+    public function testIsInNamespace(): void
     {
         $fqcn1 = new FullyQualified('App\\Models\\User');
         $fqcn2 = new FullyQualified('User');
@@ -99,7 +99,7 @@ final class FullyQualifiedTest extends TestCase
         self::assertTrue($fqcn2->isInNamespace(null)); // Class without namespace
     }
 
-    public function testGetRelativePathFrom() : void
+    public function testGetRelativePathFrom(): void
     {
         $fqcn = new FullyQualified('App\\Models\\User\\Profile');
 
@@ -120,7 +120,7 @@ final class FullyQualifiedTest extends TestCase
         self::assertSame('App\\Models\\User\\Profile', $fqcn->getRelativePathFrom(null));
     }
 
-    public function testGetRelativePathFromForClassWithoutNamespace() : void
+    public function testGetRelativePathFromForClassWithoutNamespace(): void
     {
         $fqcn = new FullyQualified('SimpleClass');
 
@@ -130,7 +130,7 @@ final class FullyQualifiedTest extends TestCase
         self::assertSame('SimpleClass', $fqcn->getRelativePathFrom(null));
     }
 
-    public function testMaybeFromString() : void
+    public function testMaybeFromString(): void
     {
         // Test with string input
         $result1 = FullyQualified::maybeFromString('App\\Models\\User');
@@ -156,7 +156,7 @@ final class FullyQualifiedTest extends TestCase
         self::assertSame('App\\Models', (string) $result4);
     }
 
-    public function testEquals() : void
+    public function testEquals(): void
     {
         $fqcn1 = new FullyQualified('App\\Models\\User');
         $fqcn2 = new FullyQualified('App', 'Models', 'User');

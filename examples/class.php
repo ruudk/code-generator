@@ -28,10 +28,15 @@ echo $generator->dumpFile([
         });
         yield ') {';
         yield $generator->indent(function () use ($generator) {
-            yield from $generator->statement($generator->dumpCall('parent', '__construct', [
-                "'Hello, World!'",
-                'true',
-            ], true));
+            yield from $generator->statement($generator->dumpCall(
+                'parent',
+                '__construct',
+                [
+                    "'Hello, World!'",
+                    'true',
+                ],
+                true,
+            ));
         });
         yield '}';
     }),

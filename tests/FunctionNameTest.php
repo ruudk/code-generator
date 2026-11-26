@@ -9,7 +9,7 @@ use PHPUnit\Framework\TestCase;
 
 final class FunctionNameTest extends TestCase
 {
-    public function testSimpleFunctionName() : void
+    public function testSimpleFunctionName(): void
     {
         $function = new FunctionName('array_map');
 
@@ -18,7 +18,7 @@ final class FunctionNameTest extends TestCase
         self::assertSame('function array_map', (string) $function);
     }
 
-    public function testNamespacedFunctionName() : void
+    public function testNamespacedFunctionName(): void
     {
         $function = new FunctionName('Symfony\\Component\\String\\u');
 
@@ -27,7 +27,7 @@ final class FunctionNameTest extends TestCase
         self::assertSame('function Symfony\\Component\\String\\u', (string) $function);
     }
 
-    public function testThrowsExceptionForEmptyName() : void
+    public function testThrowsExceptionForEmptyName(): void
     {
         $this->expectException(InvalidArgumentException::class);
         $this->expectExceptionMessage('Function name cannot be empty');
@@ -35,7 +35,7 @@ final class FunctionNameTest extends TestCase
         new FunctionName('');
     }
 
-    public function testEquals() : void
+    public function testEquals(): void
     {
         $function1 = new FunctionName('array_map');
         $function2 = new FunctionName('array_map');
@@ -45,7 +45,7 @@ final class FunctionNameTest extends TestCase
         self::assertFalse($function1->equals($function3));
     }
 
-    public function testEqualsWithNamespace() : void
+    public function testEqualsWithNamespace(): void
     {
         $function1 = new FunctionName('Symfony\\Component\\String\\u');
         $function2 = new FunctionName('Symfony\\Component\\String\\u');

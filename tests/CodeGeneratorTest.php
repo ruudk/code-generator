@@ -20,7 +20,7 @@ final class CodeGeneratorTest extends TestCase
     private CodeGenerator $generator;
 
     #[Override]
-    protected function setUp() : void
+    protected function setUp(): void
     {
         parent::setUp();
 
@@ -30,7 +30,7 @@ final class CodeGeneratorTest extends TestCase
     /**
      * @param CodeLines $content
      */
-    private function assertDump(string $expected, array | Closure | Generator | string $content) : void
+    private function assertDump(string $expected, array|Closure|Generator|string $content): void
     {
         self::assertSame($expected, $this->generator->dump($content));
     }
@@ -38,54 +38,45 @@ final class CodeGeneratorTest extends TestCase
     /**
      * @param CodeLines $content
      */
-    private function assertDumpFile(string $expected, array | Closure | Generator | string $content) : void
+    private function assertDumpFile(string $expected, array|Closure|Generator|string $content): void
     {
         self::assertSame($expected, $this->generator->dumpFile($content));
     }
 
-    public function testConstructorWithNamespace() : void
+    public function testConstructorWithNamespace(): void
     {
         $this->generator = new CodeGenerator('App\\Models');
 
-        $this->assertDumpFile(
-            <<<'PHP'
-                <?php
+        $this->assertDumpFile(<<<'PHP'
+            <?php
 
-                declare(strict_types=1);
+            declare(strict_types=1);
 
-                namespace App\Models;
+            namespace App\Models;
 
-                PHP,
-            [],
-        );
+            PHP, []);
     }
 
-    public function testConstructorWithoutNamespace() : void
+    public function testConstructorWithoutNamespace(): void
     {
-        $this->assertDumpFile(
-            <<<'PHP'
-                <?php
+        $this->assertDumpFile(<<<'PHP'
+            <?php
 
-                declare(strict_types=1);
+            declare(strict_types=1);
 
-                PHP,
-            [],
-        );
+            PHP, []);
     }
 
-    public function testDumpWithSimpleContent() : void
+    public function testDumpWithSimpleContent(): void
     {
-        $this->assertDump(
-            <<<'PHP'
-                class Foo
-                {
-                }
-                PHP,
-            ['class Foo', '{', '}'],
-        );
+        $this->assertDump(<<<'PHP'
+            class Foo
+            {
+            }
+            PHP, ['class Foo', '{', '}']);
     }
 
-    public function testDumpWithCallable() : void
+    public function testDumpWithCallable(): void
     {
         $this->assertDump(
             <<<'PHP'
@@ -101,31 +92,28 @@ final class CodeGeneratorTest extends TestCase
         );
     }
 
-    public function testDumpWithIndentation() : void
+    public function testDumpWithIndentation(): void
     {
-        $this->assertDump(
-            <<<'PHP'
-                class Test {
-                    public function method()
-                    {
-                        return true;
-                    }
+        $this->assertDump(<<<'PHP'
+            class Test {
+                public function method()
+                {
+                    return true;
                 }
-                PHP,
-            [
-                'class Test {',
-                Group::indent([
-                    'public function method()',
-                    '{',
-                    Group::indent(['return true;']),
-                    '}',
-                ]),
+            }
+            PHP, [
+            'class Test {',
+            Group::indent([
+                'public function method()',
+                '{',
+                Group::indent(['return true;']),
                 '}',
-            ],
-        );
+            ]),
+            '}',
+        ]);
     }
 
-    public function testImportClass() : void
+    public function testImportClass(): void
     {
         $this->generator = new CodeGenerator('App\\Services');
 
@@ -133,22 +121,19 @@ final class CodeGeneratorTest extends TestCase
 
         self::assertSame('User', $alias);
 
-        $this->assertDumpFile(
-            <<<'PHP'
-                <?php
+        $this->assertDumpFile(<<<'PHP'
+            <?php
 
-                declare(strict_types=1);
+            declare(strict_types=1);
 
-                namespace App\Services;
+            namespace App\Services;
 
-                use App\Models\User;
+            use App\Models\User;
 
-                PHP,
-            [],
-        );
+            PHP, []);
     }
 
-    public function testImportClassWithConflict() : void
+    public function testImportClassWithConflict(): void
     {
         $alias1 = $this->generator->import('App\\Models\\User');
         $alias2 = $this->generator->import('App\\Entities\\User');
@@ -156,21 +141,18 @@ final class CodeGeneratorTest extends TestCase
         self::assertSame('User', $alias1);
         self::assertSame('User2', $alias2);
 
-        $this->assertDumpFile(
-            <<<'PHP'
-                <?php
+        $this->assertDumpFile(<<<'PHP'
+            <?php
 
-                declare(strict_types=1);
+            declare(strict_types=1);
 
-                use App\Entities\User as User2;
-                use App\Models\User;
+            use App\Entities\User as User2;
+            use App\Models\User;
 
-                PHP,
-            [],
-        );
+            PHP, []);
     }
 
-    public function testImportClassConflictsWithSameNamespaceDeclaration() : void
+    public function testImportClassConflictsWithSameNamespaceDeclaration(): void
     {
         $this->generator = new CodeGenerator('App\\Models');
 
@@ -180,137 +162,116 @@ final class CodeGeneratorTest extends TestCase
         self::assertSame('User', $local);
         self::assertSame('User2', $external);
 
-        $this->assertDumpFile(
-            <<<'PHP'
-                <?php
+        $this->assertDumpFile(<<<'PHP'
+            <?php
 
-                declare(strict_types=1);
+            declare(strict_types=1);
 
-                namespace App\Models;
+            namespace App\Models;
 
-                use App\Domain\User as User2;
+            use App\Domain\User as User2;
 
-                PHP,
-            [],
-        );
+            PHP, []);
     }
 
-    public function testImportFunction() : void
+    public function testImportFunction(): void
     {
         $alias = $this->generator->import(new FunctionName('array_map'));
 
         self::assertSame('array_map', $alias);
 
-        $this->assertDumpFile(
-            <<<'PHP'
-                <?php
+        $this->assertDumpFile(<<<'PHP'
+            <?php
 
-                declare(strict_types=1);
+            declare(strict_types=1);
 
-                use function array_map;
+            use function array_map;
 
-                PHP,
-            [],
-        );
+            PHP, []);
     }
 
-    public function testImportEnum() : void
+    public function testImportEnum(): void
     {
         $reference = $this->generator->importEnum(TestEnum::OPTION_ONE);
 
         self::assertSame('TestEnum::OPTION_ONE', $reference);
 
-        $this->assertDumpFile(
-            <<<'PHP'
-                <?php
+        $this->assertDumpFile(<<<'PHP'
+            <?php
 
-                declare(strict_types=1);
+            declare(strict_types=1);
 
-                use Ruudk\CodeGenerator\Fixtures\TestEnum;
+            use Ruudk\CodeGenerator\Fixtures\TestEnum;
 
-                PHP,
-            [],
-        );
+            PHP, []);
     }
 
-    public function testImportEnumDirectly() : void
+    public function testImportEnumDirectly(): void
     {
         $reference = $this->generator->importEnum(TestEnum::OPTION_TWO);
 
         self::assertSame('TestEnum::OPTION_TWO', $reference);
 
-        $this->assertDumpFile(
-            <<<'PHP'
-                <?php
+        $this->assertDumpFile(<<<'PHP'
+            <?php
 
-                declare(strict_types=1);
+            declare(strict_types=1);
 
-                use Ruudk\CodeGenerator\Fixtures\TestEnum;
+            use Ruudk\CodeGenerator\Fixtures\TestEnum;
 
-                PHP,
-            [],
-        );
+            PHP, []);
     }
 
-    public function testImportSameNamespace() : void
+    public function testImportSameNamespace(): void
     {
         $this->generator = new CodeGenerator('App\\Models');
 
         $this->generator->import('App\\Models\\User');
 
-        $this->assertDumpFile(
-            <<<'PHP'
-                <?php
+        $this->assertDumpFile(<<<'PHP'
+            <?php
 
-                declare(strict_types=1);
+            declare(strict_types=1);
 
-                namespace App\Models;
+            namespace App\Models;
 
-                PHP,
-            [],
-        );
+            PHP, []);
     }
 
-    public function testImportByParentWithString() : void
+    public function testImportByParentWithString(): void
     {
         $alias = $this->generator->importByParent('App\\Models\\User');
 
         self::assertSame('Models\\User', $alias);
 
-        $this->assertDumpFile(
-            <<<'PHP'
-                <?php
+        $this->assertDumpFile(<<<'PHP'
+            <?php
 
-                declare(strict_types=1);
+            declare(strict_types=1);
 
-                use App\Models;
+            use App\Models;
 
-                PHP,
-            [],
-        );
+            PHP, []);
     }
 
-    public function testImportByParentWithNamespaceName() : void
+    public function testImportByParentWithNamespaceName(): void
     {
         $fqcn = new FullyQualified('App\\Services\\UserService');
         $alias = $this->generator->importByParent($fqcn);
 
         self::assertSame('Services\\UserService', $alias);
 
-        $this->assertDumpFile(
-            <<<'PHP'
-                <?php
+        $this->assertDumpFile(<<<'PHP'
+            <?php
 
-                declare(strict_types=1);
+            declare(strict_types=1);
 
-                use App\Services;
+            use App\Services;
 
-                PHP,
-            [],
-        );
+            PHP, []);
     }
 
-    public function testImportByParentWithConflict() : void
+    public function testImportByParentWithConflict(): void
     {
         $alias1 = $this->generator->importByParent('App\\Models\\User');
         $alias2 = $this->generator->importByParent('App\\Entities\\User');
@@ -318,21 +279,18 @@ final class CodeGeneratorTest extends TestCase
         self::assertSame('Models\\User', $alias1);
         self::assertSame('Entities\\User', $alias2);
 
-        $this->assertDumpFile(
-            <<<'PHP'
-                <?php
+        $this->assertDumpFile(<<<'PHP'
+            <?php
 
-                declare(strict_types=1);
+            declare(strict_types=1);
 
-                use App\Entities;
-                use App\Models;
+            use App\Entities;
+            use App\Models;
 
-                PHP,
-            [],
-        );
+            PHP, []);
     }
 
-    public function testImportByParentSameNamespace() : void
+    public function testImportByParentSameNamespace(): void
     {
         $this->generator = new CodeGenerator('App\\Models');
 
@@ -340,39 +298,33 @@ final class CodeGeneratorTest extends TestCase
 
         self::assertSame('User', $alias);
 
-        $this->assertDumpFile(
-            <<<'PHP'
-                <?php
+        $this->assertDumpFile(<<<'PHP'
+            <?php
 
-                declare(strict_types=1);
+            declare(strict_types=1);
 
-                namespace App\Models;
+            namespace App\Models;
 
-                PHP,
-            [],
-        );
+            PHP, []);
     }
 
-    public function testImportByParentWithThreePartNamespace() : void
+    public function testImportByParentWithThreePartNamespace(): void
     {
         $alias = $this->generator->importByParent('App\\Services\\Database\\Connection');
 
         self::assertSame('Database\\Connection', $alias);
 
-        $this->assertDumpFile(
-            <<<'PHP'
-                <?php
+        $this->assertDumpFile(<<<'PHP'
+            <?php
 
-                declare(strict_types=1);
+            declare(strict_types=1);
 
-                use App\Services\Database;
+            use App\Services\Database;
 
-                PHP,
-            [],
-        );
+            PHP, []);
     }
 
-    public function testImportWithSameNamespaceReturnsClassName() : void
+    public function testImportWithSameNamespaceReturnsClassName(): void
     {
         $this->generator = new CodeGenerator('App\\Models');
 
@@ -380,20 +332,17 @@ final class CodeGeneratorTest extends TestCase
 
         self::assertSame('User', $alias);
 
-        $this->assertDumpFile(
-            <<<'PHP'
-                <?php
+        $this->assertDumpFile(<<<'PHP'
+            <?php
 
-                declare(strict_types=1);
+            declare(strict_types=1);
 
-                namespace App\Models;
+            namespace App\Models;
 
-                PHP,
-            [],
-        );
+            PHP, []);
     }
 
-    public function testImportByParentWithSubNamespace() : void
+    public function testImportByParentWithSubNamespace(): void
     {
         $this->generator = new CodeGenerator('App\\Models');
 
@@ -401,20 +350,17 @@ final class CodeGeneratorTest extends TestCase
 
         self::assertSame('User\\Profile', $alias);
 
-        $this->assertDumpFile(
-            <<<'PHP'
-                <?php
+        $this->assertDumpFile(<<<'PHP'
+            <?php
 
-                declare(strict_types=1);
+            declare(strict_types=1);
 
-                namespace App\Models;
+            namespace App\Models;
 
-                PHP,
-            [],
-        );
+            PHP, []);
     }
 
-    public function testImportByParentWithDeepSubNamespace() : void
+    public function testImportByParentWithDeepSubNamespace(): void
     {
         $this->generator = new CodeGenerator('App');
 
@@ -422,417 +368,310 @@ final class CodeGeneratorTest extends TestCase
 
         self::assertSame('User\\Profile', $alias);
 
-        $this->assertDumpFile(
-            <<<'PHP'
-                <?php
+        $this->assertDumpFile(<<<'PHP'
+            <?php
 
-                declare(strict_types=1);
+            declare(strict_types=1);
 
-                namespace App;
+            namespace App;
 
-                use App\Models\User;
+            use App\Models\User;
 
-                PHP,
-            [],
-        );
+            PHP, []);
     }
 
-    public function testDumpAttribute() : void
+    public function testDumpAttribute(): void
     {
-        $this->assertDump(
-            '#[Required]',
-            $this->generator->dumpAttribute('App\\Attributes\\Required'),
-        );
-        $this->assertDump(
-            '#[Required(true)]',
-            $this->generator->dumpAttribute('App\\Attributes\\Required', ['true']),
-        );
-        $this->assertDump(
-            <<<'PHP'
-                #[Required(
-                    true,
-                    false,
-                )]
-                PHP,
-            $this->generator->dumpAttribute('App\\Attributes\\Required', ['true', 'false']),
-        );
+        $this->assertDump('#[Required]', $this->generator->dumpAttribute('App\\Attributes\\Required'));
+        $this->assertDump('#[Required(true)]', $this->generator->dumpAttribute('App\\Attributes\\Required', ['true']));
+        $this->assertDump(<<<'PHP'
+            #[Required(
+                true,
+                false,
+            )]
+            PHP, $this->generator->dumpAttribute('App\\Attributes\\Required', ['true', 'false']));
     }
 
-    public function testDumpClassReference() : void
+    public function testDumpClassReference(): void
     {
-        self::assertSame(
-            'User::class',
-            $this->generator->dumpClassReference('App\\Models\\User'),
-        );
+        self::assertSame('User::class', $this->generator->dumpClassReference('App\\Models\\User'));
     }
 
-    public function testDumpClassReferenceByParent() : void
+    public function testDumpClassReferenceByParent(): void
     {
-        self::assertSame(
-            'Models\\User::class',
-            $this->generator->dumpClassReference('App\\Models\\User', byParent: true),
-        );
+        self::assertSame('Models\\User::class', $this->generator->dumpClassReference(
+            'App\\Models\\User',
+            byParent: true,
+        ));
     }
 
-    public function testDumpClassReferenceWithoutImport() : void
+    public function testDumpClassReferenceWithoutImport(): void
     {
-        self::assertSame(
-            'App\\Models\\User::class',
-            $this->generator->dumpClassReference('App\\Models\\User', false),
-        );
-        self::assertSame(
-            'App\\Models\\User::class',
-            $this->generator->dumpClassReference('\\App\\Models\\User', false),
-        );
+        self::assertSame('App\\Models\\User::class', $this->generator->dumpClassReference('App\\Models\\User', false));
+        self::assertSame('App\\Models\\User::class', $this->generator->dumpClassReference(
+            '\\App\\Models\\User',
+            false,
+        ));
 
         $generator = new CodeGenerator('App');
-        self::assertSame(
-            '\\App\\Models\\User::class',
-            $generator->dumpClassReference('App\\Models\\User', false),
-        );
-        self::assertSame(
-            '\\App\\Models\\User::class',
-            $generator->dumpClassReference('\\App\\Models\\User', false),
-        );
+        self::assertSame('\\App\\Models\\User::class', $generator->dumpClassReference('App\\Models\\User', false));
+        self::assertSame('\\App\\Models\\User::class', $generator->dumpClassReference('\\App\\Models\\User', false));
     }
 
-    public function testMaybeNowDocWithSingleLine() : void
+    public function testMaybeNowDocWithSingleLine(): void
     {
-        self::assertSame(
-            "'single line'",
-            $this->generator->maybeNowDoc('single line'),
-        );
+        self::assertSame("'single line'", $this->generator->maybeNowDoc('single line'));
     }
 
-    public function testMaybeNowDocWithMultipleLines() : void
+    public function testMaybeNowDocWithMultipleLines(): void
     {
-        self::assertSame(
-            <<<'PHP'
-                <<<'EOD'
-                    line 1
-                    line 2
-                    line 3
-                    EOD
-                PHP,
-            $this->generator->maybeNowDoc("line 1\nline 2\nline 3"),
-        );
+        self::assertSame(<<<'PHP'
+            <<<'EOD'
+                line 1
+                line 2
+                line 3
+                EOD
+            PHP, $this->generator->maybeNowDoc("line 1\nline 2\nline 3"));
     }
 
-    public function testMaybeNowDocWithCustomTag() : void
+    public function testMaybeNowDocWithCustomTag(): void
     {
-        self::assertSame(
-            <<<'PHP'
-                <<<'SQL'
-                    multi
-                    line
-                    SQL
-                PHP,
-            $this->generator->maybeNowDoc("multi\nline", 'SQL'),
-        );
+        self::assertSame(<<<'PHP'
+            <<<'SQL'
+                multi
+                line
+                SQL
+            PHP, $this->generator->maybeNowDoc("multi\nline", 'SQL'));
     }
 
-    public function testStatement() : void
+    public function testStatement(): void
     {
-        $this->assertDump(
-            '$x = 5;',
-            $this->generator->statement(['$x = 5']),
-        );
+        $this->assertDump('$x = 5;', $this->generator->statement(['$x = 5']));
     }
 
-    public function testStatementWithGroup() : void
+    public function testStatementWithGroup(): void
     {
-        $this->assertDump(
-            <<<'PHP'
-                if ($condition)
-                    return true;
-                PHP,
-            $this->generator->statement([
-                'if ($condition)',
-                Group::indent(['return true']),
-            ]),
-        );
+        $this->assertDump(<<<'PHP'
+            if ($condition)
+                return true;
+            PHP, $this->generator->statement([
+            'if ($condition)',
+            Group::indent(['return true']),
+        ]));
     }
 
-    public function testSuffixLast() : void
+    public function testSuffixLast(): void
     {
-        $this->assertDump(
-            <<<'PHP'
-                item1
-                item2
-                item3,
-                PHP,
-            $this->generator->suffixLast(',', ['item1', 'item2', 'item3']),
-        );
+        $this->assertDump(<<<'PHP'
+            item1
+            item2
+            item3,
+            PHP, $this->generator->suffixLast(',', ['item1', 'item2', 'item3']));
     }
 
-    public function testSuffixLastWithEmptyIterable() : void
+    public function testSuffixLastWithEmptyIterable(): void
     {
-        self::assertSame(
-            '',
-            $this->generator->dump($this->generator->suffixLast(',', [])),
-        );
+        self::assertSame('', $this->generator->dump($this->generator->suffixLast(',', [])));
     }
 
-    public function testWrap() : void
+    public function testWrap(): void
     {
-        $this->assertDump(
-            '[content]',
-            $this->generator->wrap('[', ['content'], ']'),
-        );
+        $this->assertDump('[content]', $this->generator->wrap('[', ['content'], ']'));
     }
 
-    public function testWrapWithMultipleLines() : void
+    public function testWrapWithMultipleLines(): void
     {
-        $this->assertDump(
-            <<<'PHP'
-                (line1
-                line2)
-                PHP,
-            $this->generator->wrap('(', ['line1', 'line2'], ')'),
-        );
+        $this->assertDump(<<<'PHP'
+            (line1
+            line2)
+            PHP, $this->generator->wrap('(', ['line1', 'line2'], ')'));
     }
 
-    public function testMaybeWrapTrue() : void
+    public function testMaybeWrapTrue(): void
     {
-        $this->assertDump(
-            <<<'PHP'
-                (content)
-                PHP,
-            $this->generator->maybeWrap(true, '(', ['content'], ')'),
-        );
+        $this->assertDump(<<<'PHP'
+            (content)
+            PHP, $this->generator->maybeWrap(true, '(', ['content'], ')'));
     }
 
-    public function testMaybeWrapFalse() : void
+    public function testMaybeWrapFalse(): void
     {
-        $this->assertDump(
-            <<<'PHP'
-                content
-                PHP,
-            $this->generator->maybeWrap(false, '(', ['content'], ')'),
-        );
+        $this->assertDump(<<<'PHP'
+            content
+            PHP, $this->generator->maybeWrap(false, '(', ['content'], ')'));
     }
 
-    public function testPrefixFirst() : void
+    public function testPrefixFirst(): void
     {
-        $this->assertDump(
-            <<<'PHP'
-                > line1
-                line2
-                line3
-                PHP,
-            $this->generator->prefixFirst('> ', ['line1', 'line2', 'line3']),
-        );
+        $this->assertDump(<<<'PHP'
+            > line1
+            line2
+            line3
+            PHP, $this->generator->prefixFirst('> ', ['line1', 'line2', 'line3']));
     }
 
-    public function testPrefixFirstWithGroup() : void
+    public function testPrefixFirstWithGroup(): void
     {
-        $this->assertDump(
-            <<<'PHP'
-                    prefix: content
-                PHP,
-            $this->generator->prefixFirst('prefix: ', [Group::indent(['content'])]),
-        );
+        $this->assertDump(<<<'PHP'
+                prefix: content
+            PHP, $this->generator->prefixFirst('prefix: ', [Group::indent(['content'])]));
     }
 
-    public function testSuffixFirst() : void
+    public function testSuffixFirst(): void
     {
-        $this->assertDump(
-            <<<'PHP'
-                key:
-                value1
-                value2
-                PHP,
-            $this->generator->suffixFirst(':', ['key', 'value1', 'value2']),
-        );
+        $this->assertDump(<<<'PHP'
+            key:
+            value1
+            value2
+            PHP, $this->generator->suffixFirst(':', ['key', 'value1', 'value2']));
     }
 
-    public function testJoin() : void
+    public function testJoin(): void
     {
-        self::assertSame(
-            'item1, item2, item3',
-            $this->generator->join(', ', ['item1', 'item2', 'item3']),
-        );
+        self::assertSame('item1, item2, item3', $this->generator->join(', ', ['item1', 'item2', 'item3']));
     }
 
-    public function testJoinWithGroups() : void
+    public function testJoinWithGroups(): void
     {
-        self::assertSame(
-            'item1, , item3',
-            $this->generator->join(', ', ['item1', new Group('nested'), 'item3']),
-        );
+        self::assertSame('item1, , item3', $this->generator->join(', ', ['item1', new Group('nested'), 'item3']));
     }
 
-    public function testJoinFirstPairSimple() : void
+    public function testJoinFirstPairSimple(): void
     {
-        $this->assertDump(
-            <<<'PHP'
-                firstsecond
-                third
-                PHP,
-            $this->generator->joinFirstPair(['first', 'second', 'third']),
-        );
+        $this->assertDump(<<<'PHP'
+            firstsecond
+            third
+            PHP, $this->generator->joinFirstPair(['first', 'second', 'third']));
     }
 
-    public function testJoinFirstPairSingleElement() : void
+    public function testJoinFirstPairSingleElement(): void
     {
-        $this->assertDump(
-            <<<'PHP'
-                only
-                PHP,
-            $this->generator->joinFirstPair(['only']),
-        );
+        $this->assertDump(<<<'PHP'
+            only
+            PHP, $this->generator->joinFirstPair(['only']));
     }
 
-    public function testJoinFirstPairWithGroup() : void
+    public function testJoinFirstPairWithGroup(): void
     {
-        $this->assertDump(
-            <<<'PHP'
-                    prefixcontent
-                third
-                PHP,
-            $this->generator->joinFirstPair(['prefix', Group::indent(['content']), 'third']),
-        );
+        $this->assertDump(<<<'PHP'
+                prefixcontent
+            third
+            PHP, $this->generator->joinFirstPair(['prefix', Group::indent(['content']), 'third']));
     }
 
-    public function testAllSuffix() : void
+    public function testAllSuffix(): void
     {
-        $this->assertDump(
-            <<<'PHP'
-                item1,
-                item2,
-                item3,
-                PHP,
-            $this->generator->allSuffix(',', ['item1', 'item2', 'item3']),
-        );
+        $this->assertDump(<<<'PHP'
+            item1,
+            item2,
+            item3,
+            PHP, $this->generator->allSuffix(',', ['item1', 'item2', 'item3']));
     }
 
-    public function testAllSuffixSkipsComments() : void
+    public function testAllSuffixSkipsComments(): void
     {
-        $this->assertDump(
-            <<<'PHP'
-                item1,
-                // comment
-                item2,
-                PHP,
-            $this->generator->allSuffix(',', ['item1', '// comment', 'item2']),
-        );
+        $this->assertDump(<<<'PHP'
+            item1,
+            // comment
+            item2,
+            PHP, $this->generator->allSuffix(',', ['item1', '// comment', 'item2']));
     }
 
-    public function testAllSuffixWithGroup() : void
+    public function testAllSuffixWithGroup(): void
     {
-        $this->assertDump(
-            'item,',
-            $this->generator->allSuffix(',', [new Group(['item'])]),
-        );
+        $this->assertDump('item,', $this->generator->allSuffix(',', [new Group(['item'])]));
     }
 
-    public function testDumpCallStaticMethod() : void
+    public function testDumpCallStaticMethod(): void
     {
-        $this->assertDumpFile(
-            <<<'PHP'
-                <?php
+        $this->assertDumpFile(<<<'PHP'
+            <?php
 
-                declare(strict_types=1);
+            declare(strict_types=1);
 
-                use App\Utils\Helper;
+            use App\Utils\Helper;
 
-                Helper::process($data)
+            Helper::process($data)
 
-                PHP,
-            $this->generator->dumpCall('App\\Utils\\Helper', 'process', ['$data'], true),
-        );
+            PHP, $this->generator->dumpCall('App\\Utils\\Helper', 'process', ['$data'], true));
     }
 
-    public function testDumpCallConstructor() : void
+    public function testDumpCallConstructor(): void
     {
-        $this->assertDumpFile(
-            <<<'PHP'
-                <?php
+        $this->assertDumpFile(<<<'PHP'
+            <?php
 
-                declare(strict_types=1);
+            declare(strict_types=1);
 
-                use App\Models\User;
+            use App\Models\User;
 
-                new User()
+            new User()
 
-                PHP,
-            $this->generator->dumpCall('App\\Models\\User', '__construct', []),
-        );
+            PHP, $this->generator->dumpCall('App\\Models\\User', '__construct', []));
     }
 
-    public function testDumpCallInstanceMethod() : void
+    public function testDumpCallInstanceMethod(): void
     {
-        $this->assertDump(
-            <<<'PHP'
-                $user->getName()
-                PHP,
-            $this->generator->dumpCall('$user', 'getName'),
-        );
+        $this->assertDump(<<<'PHP'
+            $user->getName()
+            PHP, $this->generator->dumpCall('$user', 'getName'));
     }
 
-    public function testDumpCallWithArrayOfGenerators() : void
+    public function testDumpCallWithArrayOfGenerators(): void
     {
-        $true = function () : Generator {
+        $true = function (): Generator {
             yield 'true';
         };
 
-        $false = function () : Generator {
+        $false = function (): Generator {
             yield 'false';
         };
 
-        $this->assertDump(
-            <<<'PHP'
-                $var->method(
-                    true,
-                    false,
-                )
-                PHP,
-            $this->generator->dumpCall('$var', 'method', [
+        $this->assertDump(<<<'PHP'
+            $var->method(
+                true,
+                false,
+            )
+            PHP, $this->generator->dumpCall(
+            '$var',
+            'method',
+            [
                 $true(),
                 $false(),
-            ]),
-        );
+            ],
+        ));
     }
 
-    public function testDumpCallWithMultipleArguments() : void
+    public function testDumpCallWithMultipleArguments(): void
     {
-        $this->assertDump(
-            <<<'PHP'
-                $object->method(
-                    $arg1,
-                    $arg2,
-                    $arg3,
-                )
-                PHP,
-            $this->generator->dumpCall('$object', 'method', ['$arg1', '$arg2', '$arg3']),
-        );
+        $this->assertDump(<<<'PHP'
+            $object->method(
+                $arg1,
+                $arg2,
+                $arg3,
+            )
+            PHP, $this->generator->dumpCall('$object', 'method', ['$arg1', '$arg2', '$arg3']));
     }
 
-    public function testDumpCallWithIterableObject() : void
+    public function testDumpCallWithIterableObject(): void
     {
-        $this->assertDump(
-            <<<'PHP'
-                $object
-                    ->method($arg)
-                PHP,
-            $this->generator->dumpCall(['$object'], 'method', ['$arg']),
-        );
+        $this->assertDump(<<<'PHP'
+            $object
+                ->method($arg)
+            PHP, $this->generator->dumpCall(['$object'], 'method', ['$arg']));
     }
 
-    public function testDumpFunctionCall() : void
+    public function testDumpFunctionCall(): void
     {
-        $this->assertDump(
-            <<<'PHP'
-                array_map(
-                    $callback,
-                    $array,
-                )
-                PHP,
-            $this->generator->dumpFunctionCall('array_map', ['$callback', '$array']),
-        );
+        $this->assertDump(<<<'PHP'
+            array_map(
+                $callback,
+                $array,
+            )
+            PHP, $this->generator->dumpFunctionCall('array_map', ['$callback', '$array']));
     }
 
-    public function testDumpFunctionCallNoArgs() : void
+    public function testDumpFunctionCallNoArgs(): void
     {
         $result = $this->generator->dumpFunctionCall('time', []);
         $expected = 'time()';
@@ -840,44 +679,32 @@ final class CodeGeneratorTest extends TestCase
         self::assertSame($expected, $this->generator->dump($result));
     }
 
-    public function testDumpFunctionCallSingleArg() : void
+    public function testDumpFunctionCallSingleArg(): void
     {
-        $this->assertDump(
-            'count($array)',
-            $this->generator->dumpFunctionCall('count', ['$array']),
-        );
+        $this->assertDump('count($array)', $this->generator->dumpFunctionCall('count', ['$array']));
     }
 
-    public function testResolveIterableWithString() : void
+    public function testResolveIterableWithString(): void
     {
-        self::assertSame(
-            ['test string'],
-            CodeGenerator::resolveIterable('test string'),
-        );
+        self::assertSame(['test string'], CodeGenerator::resolveIterable('test string'));
     }
 
-    public function testResolveIterableWithArray() : void
+    public function testResolveIterableWithArray(): void
     {
-        self::assertSame(
-            ['line1', 'line2', 'line3'],
-            CodeGenerator::resolveIterable(['line1', 'line2', 'line3']),
-        );
+        self::assertSame(['line1', 'line2', 'line3'], CodeGenerator::resolveIterable(['line1', 'line2', 'line3']));
     }
 
-    public function testResolveIterableWithCallable() : void
+    public function testResolveIterableWithCallable(): void
     {
         $callable = function () {
             yield 'generated1';
             yield 'generated2';
         };
 
-        self::assertSame(
-            ['generated1', 'generated2'],
-            CodeGenerator::resolveIterable($callable),
-        );
+        self::assertSame(['generated1', 'generated2'], CodeGenerator::resolveIterable($callable));
     }
 
-    public function testResolveIterableWithGenerator() : void
+    public function testResolveIterableWithGenerator(): void
     {
         self::assertSame(
             ['item1', 'item2'],
@@ -888,7 +715,7 @@ final class CodeGeneratorTest extends TestCase
         );
     }
 
-    public function testCompleteCodeGeneration() : void
+    public function testCompleteCodeGeneration(): void
     {
         $this->generator = new CodeGenerator('App\\Services');
 
@@ -940,7 +767,7 @@ final class CodeGeneratorTest extends TestCase
         });
     }
 
-    public function testImportSorting() : void
+    public function testImportSorting(): void
     {
         $this->generator->import('Zebra\\Class');
         $this->generator->import('App\\Models\\User');
@@ -964,15 +791,23 @@ final class CodeGeneratorTest extends TestCase
         $this->assertDumpFile($expected, []);
     }
 
-    public function testImportSortingWithSymfonyFunctions() : void
+    public function testImportSortingWithSymfonyFunctions(): void
     {
         // Add imports in random order to test sorting
-        $this->generator->import(new FunctionName('Symfony\\Component\\DependencyInjection\\Loader\\Configurator\\service'));
+        $this->generator->import(
+            new FunctionName('Symfony\\Component\\DependencyInjection\\Loader\\Configurator\\service'),
+        );
         $this->generator->import('Symfony\\Component\\Serializer\\Mapping\\Loader\\LoaderInterface');
         $this->generator->import('Symfony\\Component\\DependencyInjection\\ContainerBuilder');
-        $this->generator->import(new FunctionName('Symfony\\Component\\DependencyInjection\\Loader\\Configurator\\param'));
-        $this->generator->import('Symfony\\Component\\DependencyInjection\\Loader\\Configurator\\ContainerConfigurator');
-        $this->generator->import(new FunctionName('Symfony\\Component\\DependencyInjection\\Loader\\Configurator\\inline_service'));
+        $this->generator->import(
+            new FunctionName('Symfony\\Component\\DependencyInjection\\Loader\\Configurator\\param'),
+        );
+        $this->generator->import(
+            'Symfony\\Component\\DependencyInjection\\Loader\\Configurator\\ContainerConfigurator',
+        );
+        $this->generator->import(
+            new FunctionName('Symfony\\Component\\DependencyInjection\\Loader\\Configurator\\inline_service'),
+        );
 
         // This should match your exact expected output
         $expected = <<<'PHP'
@@ -992,21 +827,18 @@ final class CodeGeneratorTest extends TestCase
         $this->assertDumpFile($expected, []);
     }
 
-    public function testSuffixFirstWithGroupAsFirstElement() : void
+    public function testSuffixFirstWithGroupAsFirstElement(): void
     {
-        $this->assertDump(
-            <<<'PHP'
-                    inner content,
-                second line
-                PHP,
-            $this->generator->suffixFirst(',', [
-                Group::indent(['inner content']),
-                'second line',
-            ]),
-        );
+        $this->assertDump(<<<'PHP'
+                inner content,
+            second line
+            PHP, $this->generator->suffixFirst(',', [
+            Group::indent(['inner content']),
+            'second line',
+        ]));
     }
 
-    public function testJoinFirstPairWithEmptySecondGroup() : void
+    public function testJoinFirstPairWithEmptySecondGroup(): void
     {
         $data = [
             'first',
@@ -1024,153 +856,141 @@ final class CodeGeneratorTest extends TestCase
         $this->assertDump($expected, $result);
     }
 
-    public function testDumpCallWithEmptyArgsOnIterable() : void
+    public function testDumpCallWithEmptyArgsOnIterable(): void
     {
-        $this->assertDump(
-            <<<'PHP'
-                $object
-                    ->method()
-                PHP,
-            $this->generator->dumpCall(['$object'], 'method', []),
-        );
+        $this->assertDump(<<<'PHP'
+            $object
+                ->method()
+            PHP, $this->generator->dumpCall(['$object'], 'method', []));
     }
 
-    public function testDumpCallWithMultipleArgsOnIterable() : void
+    public function testDumpCallWithMultipleArgsOnIterable(): void
     {
-        $this->assertDump(
-            <<<'PHP'
-                $object
-                    ->method(
-                        "arg1",
-                        "arg2",
-                        "arg3",
-                    )
-                PHP,
-            $this->generator->dumpCall(['$object'], 'method', ['"arg1"', '"arg2"', '"arg3"'], false, true),
-        );
+        $this->assertDump(<<<'PHP'
+            $object
+                ->method(
+                    "arg1",
+                    "arg2",
+                    "arg3",
+                )
+            PHP, $this->generator->dumpCall(['$object'], 'method', ['"arg1"', '"arg2"', '"arg3"'], false, true));
     }
 
-    public function testDumpCallWithoutCommaAfterEachArgumentAddsTrailingComma() : void
+    public function testDumpCallWithoutCommaAfterEachArgumentAddsTrailingComma(): void
     {
-        $this->assertDump(
-            <<<'PHP'
-                Helper::process(
+        $this->assertDump(<<<'PHP'
+            Helper::process(
+                match (true) {
+                    $a => 1,
+                    default => 2,
+                },
+            )
+            PHP, $this->generator->dumpCall(
+            'App\\Utils\\Helper',
+            'process',
+            [
+                'match (true) {',
+                $this->generator->indent(function () {
+                    yield '$a => 1,';
+                    yield 'default => 2,';
+                }),
+                '}',
+            ],
+            true,
+            false,
+        ));
+    }
+
+    public function testDumpCallOnIterableWithoutCommaAfterEachArgumentAddsTrailingComma(): void
+    {
+        $this->assertDump(<<<'PHP'
+            $object
+                ->method(
                     match (true) {
                         $a => 1,
                         default => 2,
                     },
                 )
-                PHP,
-            $this->generator->dumpCall('App\\Utils\\Helper', 'process', [
+            PHP, $this->generator->dumpCall(
+            ['$object'],
+            'method',
+            [
                 'match (true) {',
                 $this->generator->indent(function () {
                     yield '$a => 1,';
                     yield 'default => 2,';
                 }),
                 '}',
-            ], true, false),
-        );
+            ],
+            false,
+            false,
+        ));
     }
 
-    public function testDumpCallOnIterableWithoutCommaAfterEachArgumentAddsTrailingComma() : void
-    {
-        $this->assertDump(
-            <<<'PHP'
-                $object
-                    ->method(
-                        match (true) {
-                            $a => 1,
-                            default => 2,
-                        },
-                    )
-                PHP,
-            $this->generator->dumpCall(['$object'], 'method', [
-                'match (true) {',
-                $this->generator->indent(function () {
-                    yield '$a => 1,';
-                    yield 'default => 2,';
-                }),
-                '}',
-            ], false, false),
-        );
-    }
-
-    public function testDumpFileWithNoImportsHasNoExtraNewline() : void
+    public function testDumpFileWithNoImportsHasNoExtraNewline(): void
     {
         $this->generator = new CodeGenerator('App\\Services');
 
-        self::assertDumpFile(
-            <<<'PHP'
-                <?php
+        self::assertDumpFile(<<<'PHP'
+            <?php
 
-                declare(strict_types=1);
+            declare(strict_types=1);
 
-                namespace App\Services;
+            namespace App\Services;
 
-                class Test {}
+            class Test {}
 
-                PHP,
-            ['class Test {}'],
-        );
+            PHP, ['class Test {}']);
     }
 
-    public function testDumpFileWithImportsHasProperSpacing() : void
+    public function testDumpFileWithImportsHasProperSpacing(): void
     {
         $this->generator = new CodeGenerator('App\\Services');
         $this->generator->import('App\\Models\\User');
 
-        self::assertDumpFile(
-            <<<'PHP'
-                <?php
+        self::assertDumpFile(<<<'PHP'
+            <?php
 
-                declare(strict_types=1);
+            declare(strict_types=1);
 
-                namespace App\Services;
+            namespace App\Services;
 
-                use App\Models\User;
+            use App\Models\User;
 
-                class Test {}
+            class Test {}
 
-                PHP,
-            ['class Test {}'],
-        );
+            PHP, ['class Test {}']);
     }
 
-    public function testDumpFileWithoutNamespaceAndNoImports() : void
+    public function testDumpFileWithoutNamespaceAndNoImports(): void
     {
-        self::assertDumpFile(
-            <<<'PHP'
-                <?php
+        self::assertDumpFile(<<<'PHP'
+            <?php
 
-                declare(strict_types=1);
+            declare(strict_types=1);
 
-                class Test {}
+            class Test {}
 
-                PHP,
-            ['class Test {}'],
-        );
+            PHP, ['class Test {}']);
     }
 
-    public function testDumpFileWithoutNamespaceButWithImports() : void
+    public function testDumpFileWithoutNamespaceButWithImports(): void
     {
         $this->generator->import('App\\Models\\User');
 
-        self::assertDumpFile(
-            <<<'PHP'
-                <?php
+        self::assertDumpFile(<<<'PHP'
+            <?php
 
-                declare(strict_types=1);
+            declare(strict_types=1);
 
-                use App\Models\User;
+            use App\Models\User;
 
-                class Test {}
+            class Test {}
 
-                PHP,
-            ['class Test {}'],
-        );
+            PHP, ['class Test {}']);
     }
 
-    public function testDumpPreventsConsecutiveNewlines() : void
+    public function testDumpPreventsConsecutiveNewlines(): void
     {
         self::assertDump(
             <<<'PHP'
@@ -1205,120 +1025,105 @@ final class CodeGeneratorTest extends TestCase
         );
     }
 
-    public function testDumpPreventsConsecutiveNewlinesWithGroups() : void
+    public function testDumpPreventsConsecutiveNewlinesWithGroups(): void
     {
-        self::assertDump(
-            <<<'PHP'
-                class Test {
+        self::assertDump(<<<'PHP'
+            class Test {
 
-                    public function method()
-                    {
+                public function method()
+                {
 
-                        return true;
-                    }
-
+                    return true;
                 }
-                PHP,
-            [
-                'class Test {',
+
+            }
+            PHP, [
+            'class Test {',
+            '',
+            '',
+            Group::indent([
                 '',
                 '',
+                'public function method()',
+                '{',
                 Group::indent([
                     '',
                     '',
-                    'public function method()',
-                    '{',
-                    Group::indent([
-                        '',
-                        '',
-                        'return true;',
-                    ]),
-                    '}',
+                    'return true;',
                 ]),
-                '',
-                '',
                 '}',
-            ],
-        );
-    }
-
-    public function testTrim() : void
-    {
-        $this->assertDump(
-            <<<'PHP'
-                first line
-                middle line
-                last line
-                PHP,
-            $this->generator->trim([
-                '',
-                '',
-                'first line',
-                'middle line',
-                'last line',
-                '',
-                '',
             ]),
-        );
+            '',
+            '',
+            '}',
+        ]);
     }
 
-    public function testTrimWithOnlyEmptyLines() : void
+    public function testTrim(): void
+    {
+        $this->assertDump(<<<'PHP'
+            first line
+            middle line
+            last line
+            PHP, $this->generator->trim([
+            '',
+            '',
+            'first line',
+            'middle line',
+            'last line',
+            '',
+            '',
+        ]));
+    }
+
+    public function testTrimWithOnlyEmptyLines(): void
     {
         self::assertSame('', $this->generator->dump($this->generator->trim(['', '', ''])));
     }
 
-    public function testTrimWithNoEmptyLines() : void
+    public function testTrimWithNoEmptyLines(): void
     {
-        $this->assertDump(
-            <<<'PHP'
-                line1
-                line2
-                line3
-                PHP,
-            $this->generator->trim(['line1', 'line2', 'line3']),
-        );
+        $this->assertDump(<<<'PHP'
+            line1
+            line2
+            line3
+            PHP, $this->generator->trim(['line1', 'line2', 'line3']));
     }
 
-    public function testTrimWithEmptyLinesInMiddle() : void
+    public function testTrimWithEmptyLinesInMiddle(): void
     {
-        $this->assertDump(
-            <<<'PHP'
-                first
+        $this->assertDump(<<<'PHP'
+            first
 
-                middle
+            middle
 
-                last
-                PHP,
-            $this->generator->trim([
-                '',
-                'first',
-                '',
-                '',
-                'middle',
-                '',
-                'last',
-                '',
-            ]),
-        );
+            last
+            PHP, $this->generator->trim([
+            '',
+            'first',
+            '',
+            '',
+            'middle',
+            '',
+            'last',
+            '',
+        ]));
     }
 
-    public function testTrimWithGroups() : void
+    public function testTrimWithGroups(): void
     {
-        $this->assertDump(
-            <<<'PHP'
-                    content
-                after group
-                PHP,
-            $this->generator->trim([
-                '',
-                Group::indent(['content']),
-                'after group',
-                '',
-            ]),
-        );
+        $this->assertDump(<<<'PHP'
+                content
+            after group
+            PHP, $this->generator->trim([
+            '',
+            Group::indent(['content']),
+            'after group',
+            '',
+        ]));
     }
 
-    public function testTrimWithGenerator() : void
+    public function testTrimWithGenerator(): void
     {
         $this->assertDump(
             <<<'PHP'
@@ -1333,190 +1138,170 @@ final class CodeGeneratorTest extends TestCase
         );
     }
 
-    public function testTrimWithIndentedEmptyLines() : void
+    public function testTrimWithIndentedEmptyLines(): void
     {
-        $this->assertDump(
-            <<<'PHP'
-                content
-                PHP,
-            $this->generator->trim([
-                '    ',
-                "\t",
-                'content',
-                '  ',
+        $this->assertDump(<<<'PHP'
+            content
+            PHP, $this->generator->trim([
+            '    ',
+            "\t",
+            'content',
+            '  ',
+        ]));
+    }
+
+    public function testIndentWithTrimEnabled(): void
+    {
+        $this->assertDump(<<<'PHP'
+            class Example
+            {
+                public function test()
+                {
+                    return true;
+                }
+            }
+            PHP, [
+            'class Example',
+            '{',
+            $this->generator->indent([
+                '',
+                '',
+                'public function test()',
+                '{',
+                '    return true;',
+                '}',
+                '',
+                '',
             ]),
-        );
+            '}',
+        ]);
     }
 
-    public function testIndentWithTrimEnabled() : void
+    public function testIndentWithTrimDisabled(): void
     {
-        $this->assertDump(
-            <<<'PHP'
-                class Example
+        $this->assertDump(<<<'PHP'
+            class Example
+            {
+
+                public function test()
                 {
-                    public function test()
-                    {
-                        return true;
-                    }
+                    return true;
                 }
-                PHP,
-            [
-                'class Example',
+
+            }
+            PHP, [
+            'class Example',
+            '{',
+            $this->generator->indent([
+                '',
+                'public function test()',
                 '{',
-                $this->generator->indent([
-                    '',
-                    '',
-                    'public function test()',
-                    '{',
-                    '    return true;',
-                    '}',
-                    '',
-                    '',
-                ]),
+                '    return true;',
                 '}',
-            ],
-        );
+                '',
+            ], false),
+            '}',
+        ]);
     }
 
-    public function testIndentWithTrimDisabled() : void
+    public function testIndentWithCustomIndentionLevel(): void
     {
-        $this->assertDump(
-            <<<'PHP'
-                class Example
-                {
-
-                    public function test()
-                    {
-                        return true;
+        $this->assertDump(<<<'PHP'
+            function test()
+            {
+                    if (true) {
+                        return "nested";
                     }
-
-                }
-                PHP,
-            [
-                'class Example',
-                '{',
-                $this->generator->indent([
-                    '',
-                    'public function test()',
-                    '{',
-                    '    return true;',
-                    '}',
-                    '',
-                ], false),
-                '}',
-            ],
-        );
-    }
-
-    public function testIndentWithCustomIndentionLevel() : void
-    {
-        $this->assertDump(
-            <<<'PHP'
-                function test()
-                {
-                        if (true) {
-                            return "nested";
-                        }
-                }
-                PHP,
-            [
-                'function test()',
-                '{',
-                $this->generator->indent([
+            }
+            PHP, [
+            'function test()',
+            '{',
+            $this->generator->indent(
+                [
                     'if (true) {',
                     '    return "nested";',
                     '}',
-                ], true, 2),
-                '}',
-            ],
-        );
+                ],
+                true,
+                2,
+            ),
+            '}',
+        ]);
     }
 
-    public function testIndentWithGenerator() : void
+    public function testIndentWithGenerator(): void
     {
-        $this->assertDump(
-            <<<'PHP'
-                class Person
-                {
-                    private string $name;
+        $this->assertDump(<<<'PHP'
+            class Person
+            {
+                private string $name;
 
-                    private int $age;
-                }
-                PHP,
-            [
-                'class Person',
-                '{',
-                $this->generator->indent(function () {
-                    yield '';
-                    yield 'private string $name;';
-                    yield '';
-                    yield 'private int $age;';
-                    yield '';
-                }),
-                '}',
-            ],
-        );
+                private int $age;
+            }
+            PHP, [
+            'class Person',
+            '{',
+            $this->generator->indent(function () {
+                yield '';
+                yield 'private string $name;';
+                yield '';
+                yield 'private int $age;';
+                yield '';
+            }),
+            '}',
+        ]);
     }
 
-    public function testIndentPreservesNestedGroups() : void
+    public function testIndentPreservesNestedGroups(): void
     {
-        $this->assertDump(
-            <<<'PHP'
-                class Test
+        $this->assertDump(<<<'PHP'
+            class Test
+            {
+                public function nested()
                 {
-                    public function nested()
-                    {
-                        if ($condition) {
-                            return true;
-                        }
+                    if ($condition) {
+                        return true;
                     }
                 }
-                PHP,
-            [
-                'class Test',
+            }
+            PHP, [
+            'class Test',
+            '{',
+            $this->generator->indent([
+                '',
+                'public function nested()',
                 '{',
-                $this->generator->indent([
-                    '',
-                    'public function nested()',
-                    '{',
-                    Group::indent([
-                        'if ($condition) {',
-                        Group::indent(['return true;']),
-                        '}',
-                    ]),
+                Group::indent([
+                    'if ($condition) {',
+                    Group::indent(['return true;']),
                     '}',
-                    '',
                 ]),
                 '}',
-            ],
-        );
+                '',
+            ]),
+            '}',
+        ]);
     }
 
-    public function testPrefixWithSimpleArray() : void
+    public function testPrefixWithSimpleArray(): void
     {
-        $this->assertDump(
-            <<<'PHP'
-                // line1
-                // line2
-                // line3
-                PHP,
-            $this->generator->prefix('// ', ['line1', 'line2', 'line3']),
-        );
+        $this->assertDump(<<<'PHP'
+            // line1
+            // line2
+            // line3
+            PHP, $this->generator->prefix('// ', ['line1', 'line2', 'line3']));
     }
 
-    public function testPrefixWithMultilineString() : void
+    public function testPrefixWithMultilineString(): void
     {
-        $this->assertDump(
-            <<<'PHP'
-                > first line
-                > second line
-                > third line
-                PHP,
-            $this->generator->prefix('> ', "first line\nsecond line\nthird line"),
-        );
+        $this->assertDump(<<<'PHP'
+            > first line
+            > second line
+            > third line
+            PHP, $this->generator->prefix('> ', "first line\nsecond line\nthird line"));
     }
 
-    public function testPrefixWithGroup() : void
+    public function testPrefixWithGroup(): void
     {
         $this->assertDump(
             <<<'PHP'
@@ -1542,187 +1327,160 @@ final class CodeGeneratorTest extends TestCase
         );
     }
 
-    public function testCommentWithSimpleArray() : void
+    public function testCommentWithSimpleArray(): void
     {
-        $this->assertDump(
-            <<<'PHP'
-                // line1
-                // line2
-                // line3
-                PHP,
-            $this->generator->comment(['line1', 'line2', 'line3']),
-        );
+        $this->assertDump(<<<'PHP'
+            // line1
+            // line2
+            // line3
+            PHP, $this->generator->comment(['line1', 'line2', 'line3']));
     }
 
-    public function testCommentWithMultilineString() : void
+    public function testCommentWithMultilineString(): void
     {
-        $this->assertDump(
-            <<<'PHP'
-                // first line
-                // second line
-                PHP,
-            $this->generator->comment("first line\nsecond line"),
-        );
+        $this->assertDump(<<<'PHP'
+            // first line
+            // second line
+            PHP, $this->generator->comment("first line\nsecond line"));
     }
 
-    public function testBlockComment() : void
+    public function testBlockComment(): void
     {
-        $this->assertDump(
-            <<<'PHP'
-                /*
-                 * This is a block comment
-                 * with multiple lines
-                 * of text
-                 */
-                PHP,
-            $this->generator->blockComment([
-                'This is a block comment',
-                'with multiple lines',
-                'of text',
-            ]),
-        );
+        $this->assertDump(<<<'PHP'
+            /*
+             * This is a block comment
+             * with multiple lines
+             * of text
+             */
+            PHP, $this->generator->blockComment([
+            'This is a block comment',
+            'with multiple lines',
+            'of text',
+        ]));
     }
 
-    public function testBlockCommentWithMultilineString() : void
+    public function testBlockCommentWithMultilineString(): void
     {
-        $this->assertDump(
-            <<<'PHP'
-                /*
-                 * Line 1
-                 * Line 2
-                 * Line 3
-                 */
-                PHP,
-            $this->generator->blockComment("Line 1\nLine 2\nLine 3"),
-        );
+        $this->assertDump(<<<'PHP'
+            /*
+             * Line 1
+             * Line 2
+             * Line 3
+             */
+            PHP, $this->generator->blockComment("Line 1\nLine 2\nLine 3"));
     }
 
-    public function testDocComment() : void
+    public function testDocComment(): void
     {
-        $this->assertDump(
-            <<<'PHP'
-                /**
-                 * This is a PHPDoc comment
-                 * @param string $name The name parameter
-                 * @return void
-                 */
-                PHP,
+        $this->assertDump(<<<'PHP'
+            /**
+             * This is a PHPDoc comment
+             * @param string $name The name parameter
+             * @return void
+             */
+            PHP, $this->generator->docComment([
+            'This is a PHPDoc comment',
+            '@param string $name The name parameter',
+            '@return void',
+        ]));
+    }
+
+    public function testDocCommentWithFullDump(): void
+    {
+        $this->assertDump(<<<'PHP'
+            /**
+             * Calculate the sum of two numbers
+             * 
+             * @param int $a First number
+             * @param int $b Second number
+             * @return int The sum
+             */
+            function add(int $a, int $b): int
+            {
+                return $a + $b;
+            }
+            PHP, [
             $this->generator->docComment([
-                'This is a PHPDoc comment',
-                '@param string $name The name parameter',
-                '@return void',
+                'Calculate the sum of two numbers',
+                '',
+                '@param int $a First number',
+                '@param int $b Second number',
+                '@return int The sum',
             ]),
-        );
+            'function add(int $a, int $b): int',
+            '{',
+            Group::indent(['return $a + $b;']),
+            '}',
+        ]);
     }
 
-    public function testDocCommentWithFullDump() : void
+    public function testCommentWithGroup(): void
     {
-        $this->assertDump(
-            <<<'PHP'
-                /**
-                 * Calculate the sum of two numbers
-                 * 
-                 * @param int $a First number
-                 * @param int $b Second number
-                 * @return int The sum
-                 */
-                function add(int $a, int $b): int
-                {
-                    return $a + $b;
-                }
-                PHP,
-            [
-                $this->generator->docComment([
-                    'Calculate the sum of two numbers',
-                    '',
-                    '@param int $a First number',
-                    '@param int $b Second number',
-                    '@return int The sum',
-                ]),
-                'function add(int $a, int $b): int',
-                '{',
-                Group::indent(['return $a + $b;']),
-                '}',
-            ],
-        );
-    }
-
-    public function testCommentWithGroup() : void
-    {
-        $this->assertDump(
-            <<<'PHP'
-                // class Test
+        $this->assertDump(<<<'PHP'
+            // class Test
+            // {
+                // public function method()
                 // {
-                    // public function method()
-                    // {
-                        // return true;
-                    // }
+                    // return true;
                 // }
-                PHP,
-            $this->generator->comment([
-                'class Test',
+            // }
+            PHP, $this->generator->comment([
+            'class Test',
+            '{',
+            Group::indent([
+                'public function method()',
                 '{',
-                Group::indent([
-                    'public function method()',
-                    '{',
-                    Group::indent(['return true;']),
-                    '}',
-                ]),
+                Group::indent(['return true;']),
                 '}',
             ]),
-        );
+            '}',
+        ]));
     }
 
-    public function testBlockCommentWithGroup() : void
+    public function testBlockCommentWithGroup(): void
     {
-        $this->assertDump(
-            <<<'PHP'
-                /*
-                 * Example code:
-                     * if ($condition) {
-                         * return true;
-                     * }
-                 */
-                PHP,
-            $this->generator->blockComment([
-                'Example code:',
-                Group::indent([
-                    'if ($condition) {',
-                    Group::indent(['return true;']),
-                    '}',
-                ]),
+        $this->assertDump(<<<'PHP'
+            /*
+             * Example code:
+                 * if ($condition) {
+                     * return true;
+                 * }
+             */
+            PHP, $this->generator->blockComment([
+            'Example code:',
+            Group::indent([
+                'if ($condition) {',
+                Group::indent(['return true;']),
+                '}',
             ]),
-        );
+        ]));
     }
 
-    public function testBlockCommentWithEmptyContent() : void
+    public function testBlockCommentWithEmptyContent(): void
     {
         $this->assertDump('', $this->generator->blockComment([]));
     }
 
-    public function testDocCommentWithEmptyContent() : void
+    public function testDocCommentWithEmptyContent(): void
     {
         $this->assertDump('', $this->generator->docComment([]));
     }
 
-    public function testCommentWithEmptyContent() : void
+    public function testCommentWithEmptyContent(): void
     {
         $this->assertDump('', $this->generator->comment([]));
     }
 
-    public function testBlockCommentWithEmptyString() : void
+    public function testBlockCommentWithEmptyString(): void
     {
-        $this->assertDump(
-            <<<'PHP'
-                /*
-                 * 
-                 */
-                PHP,
-            $this->generator->blockComment(''),
-        );
+        $this->assertDump(<<<'PHP'
+            /*
+             * 
+             */
+            PHP, $this->generator->blockComment(''));
     }
 
-    public function testDocCommentWithEmptyGenerator() : void
+    public function testDocCommentWithEmptyGenerator(): void
     {
         $this->assertDump('', $this->generator->docComment([]));
     }

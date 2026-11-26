@@ -25,14 +25,9 @@ final class NamespaceName implements Importable
         }
     }
 
-    public function __construct(
-        string $part,
-        string ...$parts,
-    ) {
-        $flattened = array_filter(
-            explode('\\', implode('\\', [$part, ...$parts])),
-            fn($p) => $p !== '',
-        );
+    public function __construct(string $part, string ...$parts)
+    {
+        $flattened = array_filter(explode('\\', implode('\\', [$part, ...$parts])), fn($p) => $p !== '');
 
         if ($flattened === []) {
             throw new InvalidArgumentException('At least one non-empty part is required');
@@ -44,7 +39,7 @@ final class NamespaceName implements Importable
     /**
      * @phpstan-return ($input is null ? null : self)
      */
-    public static function maybeFromString(null | Importable | self | string $input) : ?self
+    public static function maybeFromString(Importable|self|string|null $input): ?self
     {
         if ($input === null) {
             return null;
@@ -58,7 +53,7 @@ final class NamespaceName implements Importable
     }
 
     #[Override]
-    public function __toString() : string
+    public function __toString(): string
     {
         return $this->namespace;
     }
@@ -66,7 +61,7 @@ final class NamespaceName implements Importable
     /**
      * Append parts to the namespace
      */
-    public function with(string $part, string ...$parts) : self
+    public function with(string $part, string ...$parts): self
     {
         return new self($this->namespace, $part, ...$parts);
     }
@@ -74,7 +69,7 @@ final class NamespaceName implements Importable
     /**
      * Check if this namespace is a sub-namespace of another
      */
-    public function isSubNamespaceOf(self $parent) : bool
+    public function isSubNamespaceOf(self $parent): bool
     {
         return str_starts_with($this->namespace, $parent->namespace . '\\');
     }
@@ -82,23 +77,23 @@ final class NamespaceName implements Importable
     /**
      * Check if this namespace is a direct child of another
      */
-    public function isDirectChildOf(self $parent) : bool
+    public function isDirectChildOf(self $parent): bool
     {
-        if ( ! $this->isSubNamespaceOf($parent)) {
+        if (!$this->isSubNamespaceOf($parent)) {
             return false;
         }
 
         $relativePath = $this->getRelativePathFrom($parent);
 
-        return ! str_contains($relativePath, '\\');
+        return !str_contains($relativePath, '\\');
     }
 
     /**
      * Get the relative path from a parent namespace
      */
-    public function getRelativePathFrom(self $parent) : string
+    public function getRelativePathFrom(self $parent): string
     {
-        if ( ! $this->isSubNamespaceOf($parent)) {
+        if (!$this->isSubNamespaceOf($parent)) {
             return $this->namespace;
         }
 
@@ -106,13 +101,13 @@ final class NamespaceName implements Importable
     }
 
     #[Override]
-    public function equals(object $other) : bool
+    public function equals(object $other): bool
     {
         return $other instanceof self && $this->namespace === $other->namespace;
     }
 
     #[Override]
-    public function compare(object $other) : int
+    public function compare(object $other): int
     {
         $thisStr = str_replace('\\', ' ', $this->namespace);
 
