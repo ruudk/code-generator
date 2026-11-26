@@ -553,7 +553,7 @@ final class CodeGenerator
             if ($i === 1) {
                 ++$i;
 
-                if ($line instanceof Group && $first !== null) {
+                if ($line instanceof Group) {
                     $prefix = $first instanceof Group ? '' : (string) $first;
                     $lines = self::resolveIterable($line->lines);
 
@@ -566,13 +566,8 @@ final class CodeGenerator
                     continue;
                 }
 
-                if ($first !== null) {
-                    $prefix = $first instanceof Group ? '' : (string) $first;
-                    $suffix = $line instanceof Group ? '' : (string) $line;
-                    yield $prefix . $suffix;
-                } else {
-                    yield $line;
-                }
+                $prefix = $first instanceof Group ? '' : (string) $first;
+                yield $prefix . $line;
 
                 continue;
             }
@@ -581,7 +576,7 @@ final class CodeGenerator
             yield $line;
         }
 
-        if ($i === 1 && $first !== null) {
+        if ($i === 1) {
             yield $first;
         }
     }
