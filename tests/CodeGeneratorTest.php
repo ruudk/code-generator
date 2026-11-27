@@ -1385,12 +1385,32 @@ final class CodeGeneratorTest extends TestCase
         ]));
     }
 
+    public function testPrefixDoesNotLeaveTrailingWhitespaceOnEmptyLines(): void
+    {
+        self::assertSame(
+            ['// first', '//', '// third'],
+            iterator_to_array($this->generator->prefix('// ', "first\n\nthird"), preserve_keys: false),
+        );
+        self::assertSame(['>'], iterator_to_array($this->generator->prefix('> ', ''), preserve_keys: false));
+    }
+
+    public function testDocCommentWithEmptyLine(): void
+    {
+        $this->assertDump(<<<'PHP'
+            /**
+             * Summary
+             *
+             * @deprecated Use something else
+             */
+            PHP, $this->generator->docComment(['Summary', '', '@deprecated Use something else']));
+    }
+
     public function testDocCommentWithFullDump(): void
     {
         $this->assertDump(<<<'PHP'
             /**
              * Calculate the sum of two numbers
-             * 
+             *
              * @param int $a First number
              * @param int $b Second number
              * @return int The sum
@@ -1475,7 +1495,7 @@ final class CodeGeneratorTest extends TestCase
     {
         $this->assertDump(<<<'PHP'
             /*
-             * 
+             *
              */
             PHP, $this->generator->blockComment(''));
     }
