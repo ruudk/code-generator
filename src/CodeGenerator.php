@@ -739,7 +739,8 @@ final class CodeGenerator
             }
 
             foreach (explode(PHP_EOL, $line) as $singleLine) {
-                yield $prefix . $singleLine;
+                // An empty line gets the prefix without its trailing whitespace, like `indent()` does
+                yield $singleLine === '' ? rtrim($prefix) : $prefix . $singleLine;
             }
         }
     }
